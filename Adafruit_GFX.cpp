@@ -1355,3 +1355,77 @@ void GFXcanvas16::fillScreen(uint16_t color) {
     }
 }
 
+GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth){
+  /*
+   * depth is depth in bits, not number of colors!
+   * it has to be larger than 1 and smaller or equal 8,
+   * single bit bitplanes should use GFXcanvas1, 8bpp can
+   * alternatively use GFXCanvas8, although I'm not quite
+   * sure how that handles colors (assigns 16 Bit color to
+   * 8Bit memory cell?)
+   *
+   * Any iCanvas object will have a palette assigned to it that
+   * is used to map color numbers derived from the bitplanes to
+   * the actual 16 or 24 bit (565 or 888) color value
+   *
+   * the layout in memory will be like this for an iCanvas of depth 4
+   *
+   * bitplane[0] *GFXCanvas1 <Bit 0: 1 0 1 1 0 0 0 1>
+   * bitplane[1] *GFXCanvas1 <Bit 1: 0 0 0 1 0 1 1 1>
+   * bitplane[2] *GFXCanvas1 <Bit 2: 0 1 0 0 0 0 0 1>
+   * bitplane[3] *GFXCanvas1 <Bit 3: 1 1 0 0 1 0 0 0>
+   *                                 ---------------
+   *                resulting color: 5 C 1 3 8 2 2 7
+   *
+   * palette[0]=color24{r,g,b};
+   * palette[1]=color24{r,g,b};
+   * palette[2]=color24{r,g,b};
+   *      .
+   *      .
+   *      .
+   * palette[F]=color24{r,g,b};
+   */
+
+  if(depth <=8 && depth >1){
+    uint8_t numColors = pow(2,depth);
+    GFXcanvas1 * bitplane[depth];
+    color24 palette[numColors];
+    for( uint8_t i=0;i<depth;i++){
+      bitplane[i] = new GFXcanvas1(width, height); //needs error handling if one bitplane cannot be allocated
+    }
+    switch (depth) {
+      case 1:
+        palette[]={ {  0,   0,   0}, {255, 255, 255} };
+        break;
+      case 2:
+        palette[]={ {  0,   0,   0}, {255, 255, 255}, {  255,   0,   0}, {255, 255,   0} };
+        break;
+      case 3:
+        palette[]={
+          {  0,   0,   0}, {255, 255, 255}, {255,   0,   0}, {  0, 255,   0},
+          {  0,   0, 255}, {255,   0, 255}, {255, 255,   0}. {  0, 255, 255}
+        };
+        break;
+      case 4:
+        palette[]={
+          { 20,  12,  28}, { 68,  36,  52}, { 48,  52, 109}, { 78,  74,  78},
+          {133,  76,  48}, { 52, 101,  36}, {208,  70,  72}, {117, 113,  97},
+          { 89, 125, 206}, {210, 125,  44}, {133, 149, 161}, {109, 170,  44},
+          {210, 170, 153}, {109, 194, 202}, {218, 212,  94}, {222, 238, 214}
+        };
+        break;
+      case 5:
+        palette[]={
+          { 20,  12,  28}, { 68,  36,  52}, { 48,  52, 109}, { 78,  74,  78},
+          {133,  76,  48}, { 52, 101,  36}, {208,  70,  72}, {117, 113,  97},
+          { 89, 125, 206}, {210, 125,  44}, {133, 149, 161}, {109, 170,  44},
+          {210, 170, 153}, {109, 194, 202}, {218, 212,  94}, {222, 238, 214},
+          { 10,   6,  14}, { 34,  18,  26}, { 24,  26,  54}, { 39,  37,  38},
+          { 66,  38,  24}, { 26,  50,  18}, {104,  35,  36}, { 58,  56,  48},
+          { 44,  62, 103}, {105,  62,  22}, { 66,  74,  80}, { 54,  85,  22},
+          {105,  85,  76}, { 54,  97, 101}, {109, 106,  47}, {111, 119, 107}
+        };
+        break;
+    }
+  }
+}

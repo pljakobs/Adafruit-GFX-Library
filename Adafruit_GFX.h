@@ -210,4 +210,53 @@ class GFXcanvas16 : public Adafruit_GFX {
   uint16_t *buffer;
 };
 
+class GFXiCanvas : public Adafruit_GFX {
+public:
+  GFXiCanvas(uint16_t width, uint16_t height, uint8_t width);
+  ~GFXiCanvas(void);
+  void
+    drawPixel(int16_t x, int16_t y, uint8_t colorIndex);
+    setColor(uint8_t index, color24 color);
+
+  uint16_t getPixel(int16_t x, int16_ y);
+  color24  getPixel24(int16_t x, int16_ y);
+  uint8_t  getPixelColorIndex(int16_t x, int16_t y);
+  color24  getColor(uint8_t index);
+
+}
+typedef struct color24 {
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+} color24;
+
 #endif // _ADAFRUIT_GFX_H
+
+/*
+ * interleaved bitplane canvasses
+ * class iCanvas : public Adafruit_GFX
+ *
+ * iCanvas::iCanvas(uint16_t width, uint16_t height, uint8_t depth)
+ *
+ * iCanvas::Pallette()
+ * GFXcanvas1 bitplane
+ *
+ * palette[2^depth]
+ *
+ * struct iCanvas{
+ *  pallette  myPalette;
+ *  bitplane  *bitplane[depth];
+ * }
+ *
+ * struct BitMap
+ * {
+ *    UWORD   BytesPerRow;
+ *    UWORD   Rows;
+ *    UBYTE   Flags;
+ *    UBYTE   Depth;
+ *    UWORD   pad;
+ *    PLANEPTR Planes[8];
+ * };
+ *
+ *
+ */
