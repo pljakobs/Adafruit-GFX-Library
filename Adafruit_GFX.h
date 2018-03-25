@@ -195,6 +195,7 @@ class GFXcanvas8 : public Adafruit_GFX {
            writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 
   uint8_t *getBuffer(void);
+  bool     getPixel(int16_t x, int16_t y);
  private:
   uint8_t *buffer;
 };
@@ -210,25 +211,32 @@ class GFXcanvas16 : public Adafruit_GFX {
   uint16_t *buffer;
 };
 
-class GFXiCanvas : public Adafruit_GFX {
-public:
-  GFXiCanvas(uint16_t width, uint16_t height, uint8_t width);
-  ~GFXiCanvas(void);
-  void
-    drawPixel(int16_t x, int16_t y, uint8_t colorIndex);
-    setColor(uint8_t index, color24 color);
-
-  uint16_t getPixel(int16_t x, int16_ y);
-  color24  getPixel24(int16_t x, int16_ y);
-  uint8_t  getPixelColorIndex(int16_t x, int16_t y);
-  color24  getColor(uint8_t index);
-
-}
 typedef struct color24 {
   uint8_t r;
   uint8_t g;
   uint8_t b;
 } color24;
+
+typedef struct iCanvas {
+  uint16_t width, height;
+  uint8_t depth;
+  color24 palette[];
+  GFXcanvas1 bitplanes[];
+} iCanvas;
+
+class GFXiCanvas : public Adafruit_GFX {
+public:
+  GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth);
+  ~GFXiCanvas(void);
+  void
+    drawPixel(int16_t x, int16_t y, uint8_t colorIndex),
+    setColor(uint8_t index, color24 color);
+  color24
+    getPixel24(int16_t x, int16_t y),
+    getColor(uint8_t index);
+  uint16_t getPixel565(int16_t x, int16_t y);
+  uint8_t  getPixelColorIndex(int16_t x, int16_t y);
+}
 
 #endif // _ADAFRUIT_GFX_H
 
@@ -238,16 +246,17 @@ typedef struct color24 {
  *
  * iCanvas::iCanvas(uint16_t width, uint16_t height, uint8_t depth)
  *
- * iCanvas::Pallette()
+ * iCanvas::Palette()
  * GFXcanvas1 bitplane
  *
  * palette[2^depth]
  *
  * struct iCanvas{
- *  pallette  myPalette;
+ *  palette  myPalette;
  *  bitplane  *bitplane[depth];
  * }
  *
+ * // from amiga gfx library:
  * struct BitMap
  * {
  *    UWORD   BytesPerRow;

@@ -1213,6 +1213,45 @@ void GFXcanvas1::drawPixel(int16_t x, int16_t y, uint16_t color) {
     }
 }
 
+bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
+#ifdef __AVR__
+    // Bitmask tables of 0x80>>X and ~(0x80>>X), because X>>Y is slow on AVR
+    static const uint8_t PROGMEM
+        GFXsetBit[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 },
+        GFXclrBit[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xFB, 0xFD, 0xFE };
+#endif
+  bool c;
+    if(buffer) {
+        if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
+
+        int16_t t;
+        switch(rotation) {
+            case 1:
+                t = x;
+                x = WIDTH  - 1 - y;
+                y = t;
+                break;
+            case 2:
+                x = WIDTH  - 1 - x;
+                y = HEIGHT - 1 - y;
+                break;
+            case 3:
+                t = x;
+                x = y;
+                y = HEIGHT - 1 - t;
+                break;
+        }
+
+        uint8_t   *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
+#ifdef __AVR__
+        c = *ptr | pgm_read_byte(&GFXsetBit[x & 7]);
+#else
+        c = *ptr | 0x80>>(x & 7);
+#endif
+      return c;
+    }
+}
+
 void GFXcanvas1::fillScreen(uint16_t color) {
     if(buffer) {
         uint16_t bytes = ((WIDTH + 7) / 8) * HEIGHT;
@@ -1388,17 +1427,24 @@ GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth){
 
   if(depth <=8 && depth >1){
     uint8_t numColors = pow(2,depth);
-    GFXcanvas1 * bitplane[depth];
+    GFXcanvas1 *bitplane[depth];
     color24 palette[numColors];
     for( uint8_t i=0;i<depth;i++){
-      bitplane[i] = new GFXcanvas1(width, height); //needs error handling if one bitplane cannot be allocated
+      bitplane[i] = new GFXcanvas1(width, height); //Todo needs error handling if one bitplane cannot be allocated
     }
+    /*
+     * set default palettes (up to 32 colors, anything above that will always be free)
+     */
     switch (depth) {
       case 1:
-        palette[]={ {  0,   0,   0}, {255, 255, 255} };
+        palette[]={
+          {  0,   0,   0}, {255, 255, 255}
+        };
         break;
       case 2:
-        palette[]={ {  0,   0,   0}, {255, 255, 255}, {  255,   0,   0}, {255, 255,   0} };
+        palette[]={
+          {  0,   0,   0}, {255, 255, 255}, {  255,   0,   0}, {255, 255,   0}
+        };
         break;
       case 3:
         palette[]={
@@ -1415,6 +1461,9 @@ GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth){
         };
         break;
       case 5:
+      case 6:
+      case 7:
+      case 8:
         palette[]={
           { 20,  12,  28}, { 68,  36,  52}, { 48,  52, 109}, { 78,  74,  78},
           {133,  76,  48}, { 52, 101,  36}, {208,  70,  72}, {117, 113,  97},
@@ -1428,4 +1477,44 @@ GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth){
         break;
     }
   }
+}
+
+GFXiCanvas::~GFXiCanvas(){
+  for(i=0;i<=this.depth;i++){
+    delete this.bitplane[i];
+  }
+}
+
+void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
+  for(i=0;i<=this.depth;i++) {
+    this.bitplane[i].drawPixel(x,y,(colorIndex && 1<<i));
+  }
+}
+
+color24 GFXiCanvas::getColor(uint8_t c){
+  return this.palette[c];
+}
+
+void GFXiCanvas::setColor(uint8_t i, color24 c){
+  this.palette[i]=c;
+}
+
+uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
+  uint8_t c=0;
+  for(i=0;i<=this.depth;i++) {
+      this.bitplane[i].getPixel(x,y):c|=1<<i;
+  }
+  return c;
+}
+
+color24 GFXiCanvas::getPixel24(int16_t x, int16_t y) {
+  uint8_t c;
+  return getColor(getPixelColorIndex(x,y));
+  return this.palette[c];
+}
+
+uint16_t GFXiCanvas::getPixel565(uint16_t x, uint16_t y) {
+  color24 color;
+  color = getPixelColor24(x,y);
+  return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | ((color.b & 0xF8) >> 3);
 }
