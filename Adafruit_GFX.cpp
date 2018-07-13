@@ -1534,14 +1534,12 @@ color24 GFXiCanvas::getColor(uint8_t c){
   if(c<=1<<this->depth){
     return this->palette[c];
   }else{
-    return 0;
+    return (color24){0,0,0};
   }
 }
 
 void GFXiCanvas::setColor(uint8_t i, color24 c){
-  if(c<=1<<this->depth){
     this->palette[i]=c;
-  }
 }
 
 uint8_t GFXiCanvas::getPixelColorIndex(uint16_t x, uint16_t y){
