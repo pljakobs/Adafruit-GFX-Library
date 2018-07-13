@@ -225,11 +225,12 @@ typedef struct iCanvas {
   GFXcanvas1 bitplanes[];
 } iCanvas;
 */
-class GFXiCanvas : public Adafruit_GFX{
+class GFXiCanvas : public Adafruit_GFX {
 public:
   GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth);
   ~GFXiCanvas(void);
   void
+    drawPixel(int16_t x, int16_t y, uint16_t colorIndex),
     drawPixel(uint16_t x, uint16_t y, uint8_t colorIndex),
     setColor(uint8_t index, color24 color),
     draw(uint16_t x, uint16_t y, Adafruit_GFX *display);
@@ -239,7 +240,8 @@ public:
   uint16_t
     getPixel565(uint16_t x, uint16_t y);
   uint8_t
-    getPixelColorIndex(uint16_t x, uint16_t y);
+    getPixelColorIndex(uint16_t x, uint16_t y),
+    getDepth();
 private:
   uint16_t width, height;
   uint8_t depth;

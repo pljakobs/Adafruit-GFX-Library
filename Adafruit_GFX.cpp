@@ -1397,7 +1397,7 @@ void GFXcanvas16::fillScreen(uint16_t color) {
     }
 }
 
-GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth) : Adafruit_GFX(width, height){
+GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth):Adafruit_GFX(width, height){
   /*
    * depth is depth in bits, not number of colors!
    * it has to be larger than 1 and smaller or equal 8,
@@ -1427,17 +1427,19 @@ GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth) : Adafrui
    *      .
    * palette[F]=color24{r,g,b};
    */
-
-  if(depth <=8 && depth >1){
+   Serial.printf("\n\n\n intializing canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",width, height, depth);
+  if(depth <=8 && depth >=1){
     uint8_t numColors = pow(2,depth);
     GFXcanvas1 *bitplane[depth];
     color24 palette[numColors];
     for( uint8_t i=0;i<depth;i++){
       bitplane[i] = new GFXcanvas1(width, height); //Todo needs error handling if one bitplane cannot be allocated
+      Serial.printf("initialized bitplane[%i] @%i\n",i,bitplane[i]);
     }
     /*
      * set default palettes (up to 32 colors, anything above that will always be free)
      */
+     Serial.printf("initializing palette for %i colors",numColors);
     switch (depth) {
       case 1:
         palette[0]={.r=  0, .g=  0, .b=  0};
@@ -1524,11 +1526,23 @@ GFXiCanvas::~GFXiCanvas(){
   }
 }
 
+uint8_t GFXiCanvas::getDepth(){
+  return this->depth;
+}
+
 void GFXiCanvas::drawPixel(uint16_t x, uint16_t y, uint8_t colorIndex){
-  for(uint8_t i=0;i<=this->depth;i++) {
-    this->bitplane[i].drawPixel(x,y,(colorIndex && 1<<i));
+  if(colorIndex<1<<this->depth){
+    for(uint8_t i=0;i<=this->depth;i++) {
+      this->bitplane[i].drawPixel(x,y,(colorIndex && 1<<i));
+      }
   }
 }
+
+void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
+  uint8_t c=(uint8_t)(colorIndex&0xff);
+  drawPixel((uint16_t)x,(uint16_t)y,c);
+}
+
 
 color24 GFXiCanvas::getColor(uint8_t c){
   if(c<=1<<this->depth){
