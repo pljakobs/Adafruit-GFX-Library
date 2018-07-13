@@ -1250,6 +1250,9 @@ bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
 #endif
       return c;
     }
+    else{
+      return false;
+    }
 }
 
 void GFXcanvas1::fillScreen(uint16_t color) {
@@ -1528,11 +1531,17 @@ void GFXiCanvas::drawPixel(uint16_t x, uint16_t y, uint8_t colorIndex){
 }
 
 color24 GFXiCanvas::getColor(uint8_t c){
-  return this->palette[c];
+  if(c<=1<<this->depth){
+    return this->palette[c];
+  }else{
+    return 0;
+  }
 }
 
 void GFXiCanvas::setColor(uint8_t i, color24 c){
-  this->palette[i]=c;
+  if(c<=1<<this->depth){
+    this->palette[i]=c;
+  }
 }
 
 uint8_t GFXiCanvas::getPixelColorIndex(uint16_t x, uint16_t y){
@@ -1544,13 +1553,19 @@ uint8_t GFXiCanvas::getPixelColorIndex(uint16_t x, uint16_t y){
 }
 
 color24 GFXiCanvas::getPixel24(uint16_t x, uint16_t y) {
-  uint8_t c;
   return getColor(getPixelColorIndex(x,y));
-  return this->palette[c];
 }
 
 uint16_t GFXiCanvas::getPixel565(uint16_t x, uint16_t y) {
   color24 color;
   color = getPixel24(x,y);
   return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | ((color.b & 0xF8) >> 3);
+}
+
+void GFXiCanvas::draw(uint16_t x0, uint16_t y0, Adafruit_GFX *display){
+  for (uint16_t y=0;y<this->height;y++){
+    for (uint16_t x=0;x<this->width;x++){
+      display->drawPixel(x0+x, y0+y, getPixel565(x,y));
+    }
+  }
 }

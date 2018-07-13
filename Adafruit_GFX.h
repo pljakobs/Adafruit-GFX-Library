@@ -231,7 +231,8 @@ public:
   ~GFXiCanvas(void);
   void
     drawPixel(uint16_t x, uint16_t y, uint8_t colorIndex),
-    setColor(uint8_t index, color24 color);
+    setColor(uint8_t index, color24 color),
+    draw(uint16_t x, uint16_t y, Adafruit_GFX *display);
   color24
     getPixel24(uint16_t x, uint16_t y),
     getColor(uint8_t index);
