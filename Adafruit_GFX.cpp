@@ -1222,7 +1222,7 @@ bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
 #endif
   bool c;
     if(buffer) {
-        if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
+        if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return false;
 
         int16_t t;
         switch(rotation) {
@@ -1394,7 +1394,7 @@ void GFXcanvas16::fillScreen(uint16_t color) {
     }
 }
 
-GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth){
+GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth) : Adafruit_GFX(width, height){
   /*
    * depth is depth in bits, not number of colors!
    * it has to be larger than 1 and smaller or equal 8,
@@ -1437,84 +1437,120 @@ GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth){
      */
     switch (depth) {
       case 1:
-        palette[]={
-          {  0,   0,   0}, {255, 255, 255}
-        };
+        palette[0]={.r=  0, .g=  0, .b=  0};
+        palette[1]={.r=255, .g=255, .b=255};
         break;
       case 2:
-        palette[]={
-          {  0,   0,   0}, {255, 255, 255}, {  255,   0,   0}, {255, 255,   0}
-        };
+        palette[0]={.r=  0, .g=  0, .b=  0};
+        palette[1]={.r=255, .g=255, .b=255};
+        palette[2]={.r=255, .g=  0, .b=  0};
+        palette[3]={.r=255, .g=255, .b=  0};
         break;
       case 3:
-        palette[]={
-          {  0,   0,   0}, {255, 255, 255}, {255,   0,   0}, {  0, 255,   0},
-          {  0,   0, 255}, {255,   0, 255}, {255, 255,   0}. {  0, 255, 255}
-        };
+        palette[0]={.r=  0, .g=  0, .b=  0};
+        palette[1]={.r=255, .g=255, .b=255};
+        palette[2]={.r=255, .g=  0, .b=  0};
+        palette[3]={.r=  0, .g=255, .b=  0};
+        palette[4]={.r=  0, .g=  0, .b=255};
+        palette[5]={.r=255, .g=  0, .b=255};
+        palette[6]={.r=255, .g=255, .b=  0};
+        palette[7]={.r=  0, .g=255, .b=255};
         break;
       case 4:
-        palette[]={
-          { 20,  12,  28}, { 68,  36,  52}, { 48,  52, 109}, { 78,  74,  78},
-          {133,  76,  48}, { 52, 101,  36}, {208,  70,  72}, {117, 113,  97},
-          { 89, 125, 206}, {210, 125,  44}, {133, 149, 161}, {109, 170,  44},
-          {210, 170, 153}, {109, 194, 202}, {218, 212,  94}, {222, 238, 214}
-        };
+        palette[0] ={.r= 20, .g= 12, .b= 28};
+        palette[1] ={.r= 68, .g= 36, .b= 52};
+        palette[2] ={.r= 48, .g= 52, .b=109};
+        palette[3] ={.r= 78, .g= 74, .b= 78};
+        palette[4] ={.r=133, .g= 76, .b= 48};
+        palette[5] ={.r= 52, .g=101, .b= 36};
+        palette[6] ={.r=208, .g= 70, .b= 72};
+        palette[7] ={.r=117, .g=113, .b= 97};
+        palette[8] ={.r= 89, .g=125, .b=206};
+        palette[9] ={.r=210, .g=125, .b= 44};
+        palette[10]={.r=133, .g=149, .b=161};
+        palette[11]={.r=109, .g=170, .b= 44};
+        palette[12]={.r=210, .g=170, .b=153};
+        palette[13]={.r=109, .g=194, .b=202};
+        palette[14]={.r=218, .g=212, .b= 94};
+        palette[15]={.r=222, .g=238, .b=214};
         break;
       case 5:
       case 6:
       case 7:
       case 8:
-        palette[]={
-          { 20,  12,  28}, { 68,  36,  52}, { 48,  52, 109}, { 78,  74,  78},
-          {133,  76,  48}, { 52, 101,  36}, {208,  70,  72}, {117, 113,  97},
-          { 89, 125, 206}, {210, 125,  44}, {133, 149, 161}, {109, 170,  44},
-          {210, 170, 153}, {109, 194, 202}, {218, 212,  94}, {222, 238, 214},
-          { 10,   6,  14}, { 34,  18,  26}, { 24,  26,  54}, { 39,  37,  38},
-          { 66,  38,  24}, { 26,  50,  18}, {104,  35,  36}, { 58,  56,  48},
-          { 44,  62, 103}, {105,  62,  22}, { 66,  74,  80}, { 54,  85,  22},
-          {105,  85,  76}, { 54,  97, 101}, {109, 106,  47}, {111, 119, 107}
-        };
+        palette[0] ={.r= 20, .g= 12, .b= 28};
+        palette[1] ={.r= 68, .g= 36, .b= 52};
+        palette[2] ={.r= 48, .g= 52, .b=109};
+        palette[3] ={.r= 78, .g= 74, .b= 78};
+        palette[4] ={.r=133, .g= 76, .b= 48};
+        palette[5] ={.r= 52, .g=101, .b= 36};
+        palette[6] ={.r=208, .g= 70, .b= 72};
+        palette[7] ={.r=117, .g=113, .b= 97};
+        palette[8] ={.r= 89, .g=125, .b=206};
+        palette[9] ={.r=210, .g=125, .b= 44};
+        palette[10]={.r=133, .g=149, .b=161};
+        palette[11]={.r=109, .g=170, .b= 44};
+        palette[12]={.r=210, .g=170, .b=153};
+        palette[13]={.r=109, .g=194, .b=202};
+        palette[14]={.r=218, .g=212, .b= 94};
+        palette[15]={.r=222, .g=238, .b=214};
+        palette[16]={.r= 10, .g=  6, .b= 14};
+        palette[17]={.r= 34, .g= 18, .b= 26};
+        palette[18]={.r= 24, .g= 26, .b= 54};
+        palette[19]={.r= 39, .g= 37, .b= 38};
+        palette[20]={.r= 66, .g= 38, .b= 24};
+        palette[21]={.r= 26, .g= 50, .b= 18};
+        palette[22]={.r=104, .g= 35, .b= 36};
+        palette[23]={.r= 58, .g= 56, .b= 48};
+        palette[24]={.r= 44, .g= 62, .b=103};
+        palette[25]={.r=105, .g= 62, .b= 22};
+        palette[26]={.r= 66, .g= 74, .b= 80};
+        palette[27]={.r= 54, .g= 85, .b= 22};
+        palette[28]={.r=105, .g= 85, .b= 76};
+        palette[29]={.r= 54, .g= 97, .b=101};
+        palette[30]={.r=109, .g=106, .b= 47};
+        palette[31]={.r=111, .g=119, .b=107};
         break;
     }
   }
 }
 
 GFXiCanvas::~GFXiCanvas(){
-  for(i=0;i<=this.depth;i++){
-    delete this.bitplane[i];
+  for(uint8_t i=0;i<=this->depth;i++){
+    delete &this->bitplane[i];
   }
 }
 
-void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
-  for(i=0;i<=this.depth;i++) {
-    this.bitplane[i].drawPixel(x,y,(colorIndex && 1<<i));
+void GFXiCanvas::drawPixel(uint16_t x, uint16_t y, uint8_t colorIndex){
+  for(uint8_t i=0;i<=this->depth;i++) {
+    this->bitplane[i].drawPixel(x,y,(colorIndex && 1<<i));
   }
 }
 
 color24 GFXiCanvas::getColor(uint8_t c){
-  return this.palette[c];
+  return this->palette[c];
 }
 
 void GFXiCanvas::setColor(uint8_t i, color24 c){
-  this.palette[i]=c;
+  this->palette[i]=c;
 }
 
-uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
+uint8_t GFXiCanvas::getPixelColorIndex(uint16_t x, uint16_t y){
   uint8_t c=0;
-  for(i=0;i<=this.depth;i++) {
-      this.bitplane[i].getPixel(x,y):c|=1<<i;
+  for(uint8_t i=0;i<=this->depth;i++) {
+      c|=this->bitplane[i].getPixel(x,y)<<i;
   }
   return c;
 }
 
-color24 GFXiCanvas::getPixel24(int16_t x, int16_t y) {
+color24 GFXiCanvas::getPixel24(uint16_t x, uint16_t y) {
   uint8_t c;
   return getColor(getPixelColorIndex(x,y));
-  return this.palette[c];
+  return this->palette[c];
 }
 
 uint16_t GFXiCanvas::getPixel565(uint16_t x, uint16_t y) {
   color24 color;
-  color = getPixelColor24(x,y);
+  color = getPixel24(x,y);
   return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | ((color.b & 0xF8) >> 3);
 }
