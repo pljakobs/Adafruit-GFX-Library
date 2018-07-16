@@ -73,6 +73,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Adafruit_GFX::Adafruit_GFX(int16_t w, int16_t h):
 WIDTH(w), HEIGHT(h)
 {
+    Serial.printf("Initializing GFX baseclass with w: %i h: %i",WIDTH, HEIGHT);
     _width    = WIDTH;
     _height   = HEIGHT;
     rotation  = 0;
@@ -1397,7 +1398,7 @@ void GFXcanvas16::fillScreen(uint16_t color) {
     }
 }
 
-GFXiCanvas::GFXiCanvas(uint16_t width, uint16_t height, uint8_t depth):Adafruit_GFX(width, height){
+GFXiCanvas::GFXiCanvas(int16_t width, int16_t height, uint8_t depth):Adafruit_GFX(width, height){
   /*
    * depth is depth in bits, not number of colors!
    * it has to be larger than 1 and smaller or equal 8,
@@ -1530,7 +1531,7 @@ uint8_t GFXiCanvas::getDepth(){
   return this->depth;
 }
 
-void GFXiCanvas::drawPixel(uint16_t x, uint16_t y, uint8_t colorIndex){
+void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
   if(colorIndex<1<<this->depth){
     for(uint8_t i=0;i<=this->depth;i++) {
       this->bitplane[i].drawPixel(x,y,(colorIndex && 1<<i));
@@ -1556,7 +1557,7 @@ void GFXiCanvas::setColor(uint8_t i, color24 c){
     this->palette[i]=c;
 }
 
-uint8_t GFXiCanvas::getPixelColorIndex(uint16_t x, uint16_t y){
+uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
   uint8_t c=0;
   for(uint8_t i=0;i<=this->depth;i++) {
       c|=this->bitplane[i].getPixel(x,y)<<i;
@@ -1564,19 +1565,19 @@ uint8_t GFXiCanvas::getPixelColorIndex(uint16_t x, uint16_t y){
   return c;
 }
 
-color24 GFXiCanvas::getPixel24(uint16_t x, uint16_t y) {
+color24 GFXiCanvas::getPixel24(int16_t x, int16_t y) {
   return getColor(getPixelColorIndex(x,y));
 }
 
-uint16_t GFXiCanvas::getPixel565(uint16_t x, uint16_t y) {
+uint16_t GFXiCanvas::getPixel565(int16_t x, int16_t y) {
   color24 color;
   color = getPixel24(x,y);
   return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | ((color.b & 0xF8) >> 3);
 }
 
-void GFXiCanvas::draw(uint16_t x0, uint16_t y0, Adafruit_GFX *display){
-  for (uint16_t y=0;y<this->height;y++){
-    for (uint16_t x=0;x<this->width;x++){
+void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
+  for (int16_t y=0;y<this->height;y++){
+    for (int16_t x=0;x<this->width;x++){
       display->drawPixel(x0+x, y0+y, getPixel565(x,y));
     }
   }
