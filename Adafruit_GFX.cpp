@@ -38,6 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #elif defined(ESP8266) || defined(ESP32)
   #include <pgmspace.h>
 #endif
+#include <vector>
 
 // Many (but maybe not all) non-AVR board installs define macros
 // for compatibility with existing PROGMEM-reading AVR code.
@@ -80,7 +81,6 @@ POSSIBILITY OF SUCH DAMAGE.
 Adafruit_GFX::Adafruit_GFX(int16_t w, int16_t h):
 WIDTH(w), HEIGHT(h)
 {
-    Serial.printf("Initializing GFX baseclass with w: %i h: %i",WIDTH, HEIGHT);
     _width    = WIDTH;
     _height   = HEIGHT;
     rotation  = 0;
@@ -1994,7 +1994,10 @@ void GFXcanvas16::fillScreen(uint16_t color) {
     }
 }
 
-GFXiCanvas::GFXiCanvas(int16_t width, int16_t height, uint8_t depth):Adafruit_GFX(width, height){
+GFXiCanvas::GFXiCanvas(int16_t _width, int16_t _height, uint8_t _depth):Adafruit_GFX(width, height){
+  width=_width;
+  height=_height;
+  depth=_depth;
   /*
    * depth is depth in bits, not number of colors!
    * it has to be larger than 1 and smaller or equal 8,
@@ -2024,57 +2027,67 @@ GFXiCanvas::GFXiCanvas(int16_t width, int16_t height, uint8_t depth):Adafruit_GF
    *      .
    * palette[F]=color24{r,g,b};
    */
-   Serial.printf("\n\n\n intializing canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",width, height, depth);
+   Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\n intializing canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",width, height, depth);
   if(depth <=8 && depth >=1){
-    uint8_t numColors = pow(2,depth);
-    GFXcanvas1 *bitplane[depth];
-    color24 palette[numColors];
+    uint8_t numColors = 1<<depth;
+    palette.reserve(numColors);
+    //Serial.printf("struct palette: sizeof(palette[0].r)=%i, sizeof(palette[0].g)=%i, sizeof(palette[0].b)=%i\n",sizeof(palette[0].r),sizeof(palette[0].g),sizeof(palette[0].b));
+    bitplane.reserve(depth);
+    //GFXcanvas1 *bitplane = new *GFXcanvas1[depth];
+    //palette ) new color24[numColors];
+    //GFXcanvas1 *bitplane[depth];
+    //color24 palette[numColors];
     for( uint8_t i=0;i<depth;i++){
-      bitplane[i] = new GFXcanvas1(width, height); //Todo needs error handling if one bitplane cannot be allocated
-      Serial.printf("initialized bitplane[%i] @%i\n",i,bitplane[i]);
+      bitplane.push_back(new GFXcanvas1(width, height)); //Todo needs error handling if one bitplane cannot be allocated
+      Serial.printf("initialized bitplane[%i] at %i\n",i,bitplane.at(i)->getBuffer());
     }
+    Serial.printf("created bitplanes\n=================\n");
     /*
      * set default palettes (up to 32 colors, anything above that will always be free)
      */
-     Serial.printf("initializing palette for %i colors",numColors);
+    Serial.printf("initializing palette for %i colors\nvector has a size of %i(%i)\n",numColors,palette.capacity(),sizeof(palette[0]));
+    for(uint8_t n=0;n<numColors;n++){
+      palette.push_back({.r=0,.g=0,.b=0});
+    }
     switch (depth) {
       case 1:
-        palette[0]={.r=  0, .g=  0, .b=  0};
-        palette[1]={.r=255, .g=255, .b=255};
+        palette.at(0)={.r=  0, .g=  0, .b=  0};
+        palette.at(1)={.r=255, .g=255, .b=255};
         break;
       case 2:
-        palette[0]={.r=  0, .g=  0, .b=  0};
-        palette[1]={.r=255, .g=255, .b=255};
-        palette[2]={.r=255, .g=  0, .b=  0};
-        palette[3]={.r=255, .g=255, .b=  0};
+        palette.at(0)={.r=  0, .g=  0, .b=  0};
+        palette.at(1)={.r=255, .g=255, .b=255};
+        palette.at(2)={.r=255, .g=  0, .b=  0};
+        palette.at(3)={.r=255, .g=255, .b=  0};
         break;
       case 3:
-        palette[0]={.r=  0, .g=  0, .b=  0};
-        palette[1]={.r=255, .g=255, .b=255};
-        palette[2]={.r=255, .g=  0, .b=  0};
-        palette[3]={.r=  0, .g=255, .b=  0};
-        palette[4]={.r=  0, .g=  0, .b=255};
-        palette[5]={.r=255, .g=  0, .b=255};
-        palette[6]={.r=255, .g=255, .b=  0};
-        palette[7]={.r=  0, .g=255, .b=255};
+        palette.at( 0)={.r=  0, .g=  0, .b=  0};
+        palette.at( 1)={.r=255, .g=255, .b=255};
+        palette.at( 2)={.r=255, .g=  0, .b=  0};
+        palette.at( 3)={.r=  0, .g=255, .b=  0};
+        palette.at( 4)={.r=  0, .g=  0, .b=255};
+        palette.at( 5)={.r=255, .g=  0, .b=255};
+        palette.at( 6)={.r=255, .g=255, .b=  0};
+        palette.at( 7)={.r=  0, .g=255, .b=255};
         break;
       case 4:
-        palette[0] ={.r= 20, .g= 12, .b= 28};
-        palette[1] ={.r= 68, .g= 36, .b= 52};
-        palette[2] ={.r= 48, .g= 52, .b=109};
-        palette[3] ={.r= 78, .g= 74, .b= 78};
-        palette[4] ={.r=133, .g= 76, .b= 48};
-        palette[5] ={.r= 52, .g=101, .b= 36};
-        palette[6] ={.r=208, .g= 70, .b= 72};
-        palette[7] ={.r=117, .g=113, .b= 97};
-        palette[8] ={.r= 89, .g=125, .b=206};
-        palette[9] ={.r=210, .g=125, .b= 44};
-        palette[10]={.r=133, .g=149, .b=161};
-        palette[11]={.r=109, .g=170, .b= 44};
-        palette[12]={.r=210, .g=170, .b=153};
-        palette[13]={.r=109, .g=194, .b=202};
-        palette[14]={.r=218, .g=212, .b= 94};
-        palette[15]={.r=222, .g=238, .b=214};
+
+        palette.at( 0)= {.r= 20, .g= 12, .b= 28};
+        palette.at( 1)= {.r= 68, .g= 36, .b= 52};
+        palette.at( 2)= {.r= 48, .g= 52, .b=109};
+        palette.at( 3)= {.r= 78, .g= 74, .b= 78};
+        palette.at( 4)= {.r=133, .g= 76, .b= 48};
+        palette.at( 5)= {.r= 52, .g=101, .b= 36};
+        palette.at( 6)= {.r=208, .g= 70, .b= 72};
+        palette.at( 7)= {.r=117, .g=113, .b= 97};
+        palette.at( 8)= {.r= 89, .g=125, .b=206};
+        palette.at( 9)= {.r=210, .g=125, .b= 44};
+        palette.at(10)= {.r=133, .g=149, .b=161};
+        palette.at(11)= {.r=109, .g=170, .b= 44};
+        palette.at(12)= {.r=210, .g=170, .b=153};
+        palette.at(13)= {.r=109, .g=194, .b=202};
+        palette.at(14)= {.r=218, .g=212, .b= 94};
+        palette.at(15)= {.r=222, .g=238, .b=214};
         break;
       case 5:
       case 6:
@@ -2115,12 +2128,17 @@ GFXiCanvas::GFXiCanvas(int16_t width, int16_t height, uint8_t depth):Adafruit_GF
         break;
     }
   }
+  Serial.printf("GFXiCanvas consturctur finished\ncreated %i bitplanes and %i palette positions\n\n>>>>>>>>>>>>>>>>>>>>>\n",bitplane.capacity(), palette.capacity());
 }
 
 GFXiCanvas::~GFXiCanvas(){
-  for(uint8_t i=0;i<=this->depth;i++){
-    delete &this->bitplane[i];
+  Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\ndeleting canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",width, height, depth);
+  for(uint8_t i=0;i<this->depth;i++){
+    delete this->bitplane.at(i);
   }
+  bitplane.clear();
+  palette.clear();
+  Serial.printf("\n exit destructor\n\n>>>>>>>>>>>>>>>>>>>>>\n");
 }
 
 uint8_t GFXiCanvas::getDepth(){
@@ -2129,35 +2147,41 @@ uint8_t GFXiCanvas::getDepth(){
 
 void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
   if(colorIndex<1<<this->depth){
-    for(uint8_t i=0;i<=this->depth;i++) {
-      this->bitplane[i].drawPixel(x,y,(colorIndex && 1<<i));
+    //Serial.printf("drawing pixel at x:%i, y:%i\n",x,y);
+    for(uint8_t i=0;i<this->depth;i++) {
+      //Serial.printf("bitplane:%i, val:%i\n",i,(colorIndex && 1<<i));
+      this->bitplane.at(i)->drawPixel(x,y,(colorIndex && (1<<i)));
       }
   }
 }
 
 void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
   uint8_t c=(uint8_t)(colorIndex&0xff);
-  drawPixel((uint16_t)x,(uint16_t)y,c);
+  drawPixel(x,y,c);
 }
 
 
-color24 GFXiCanvas::getColor(uint8_t c){
-  if(c<=1<<this->depth){
-    return this->palette[c];
+color24 GFXiCanvas::getColor(uint8_t i){
+  if(i<=1<<this->depth){
+    return this->palette.at(i);
   }else{
     return (color24){0,0,0};
   }
 }
 
 void GFXiCanvas::setColor(uint8_t i, color24 c){
-    this->palette[i]=c;
+    this->palette.at(i)=c;
 }
 
 uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
   uint8_t c=0;
-  for(uint8_t i=0;i<=this->depth;i++) {
-      c|=this->bitplane[i].getPixel(x,y)<<i;
+  //Serial.printf("getPixelColorIndex x:%i, y:%i [",x,y);
+  for(uint8_t i=0;i<this->depth;i++) {
+      //Serial.printf("%i",this->bitplane.at(i)->getPixel(x,y));
+      c|=this->bitplane.at(i)->getPixel(x,y)<<i;
   }
+  //Serial.printf("] c:%i\n",c)
+  ;
   return c;
 }
 
@@ -2168,6 +2192,7 @@ color24 GFXiCanvas::getPixel24(int16_t x, int16_t y) {
 uint16_t GFXiCanvas::getPixel565(int16_t x, int16_t y) {
   color24 color;
   color = getPixel24(x,y);
+  //Serial.printf("getPixel656, x:%i, y:%i, r=%i, g=%i, b=%i\n",x,y,color.r,color.g,color.b);
   return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | ((color.b & 0xF8) >> 3);
 }
 
@@ -2176,5 +2201,11 @@ void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
     for (int16_t x=0;x<this->width;x++){
       display->drawPixel(x0+x, y0+y, getPixel565(x,y));
     }
+  }
+}
+
+uint8_t *GFXiCanvas::getBuffer(uint8_t plane){
+  if(plane>=0 && plane <this->depth){
+    return this->bitplane.at(plane)->getBuffer();
   }
 }

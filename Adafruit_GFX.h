@@ -8,6 +8,7 @@
  #include "WProgram.h"
 #endif
 #include "gfxfont.h"
+#include <vector>
 
 /// A generic graphics superclass that can handle all sorts of drawing. At a minimum you can subclass and provide drawPixel(). At a maximum you can do a ton of overriding to optimize. Used for any/all Adafruit displays!
 class Adafruit_GFX : public Print {
@@ -17,7 +18,7 @@ class Adafruit_GFX : public Print {
   Adafruit_GFX(int16_t w, int16_t h); // Constructor
 
   // This MUST be defined by the subclass:
-  virtual void drawPixel(int16_t x, int16_t y, uint16_t color) = 0;    ///< Virtual drawPixel() function to draw to the screen/framebuffer/etc, must be overridden in subclass. @param x X coordinate.  @param y Y coordinate. @param color 16-bit pixel color. 
+  virtual void drawPixel(int16_t x, int16_t y, uint16_t color) = 0;    ///< Virtual drawPixel() function to draw to the screen/framebuffer/etc, must be overridden in subclass. @param x X coordinate.  @param y Y coordinate. @param color 16-bit pixel color.
 
   // TRANSACTION API / CORE DRAW API
   // These MAY be overridden by the subclass to provide device-specific
@@ -246,7 +247,8 @@ public:
     drawPixel(int16_t x, int16_t y, uint16_t colorIndex),
     drawPixel(int16_t x, int16_t y, uint8_t colorIndex),
     setColor(uint8_t index, color24 color),
-    draw(int16_t x, int16_t y, Adafruit_GFX *display);
+    draw(int16_t x, int16_t y, Adafruit_GFX *display),
+    dump(void);
   color24
     getPixel24(int16_t x, int16_t y),
     getColor(uint8_t index);
@@ -255,11 +257,15 @@ public:
   uint8_t
     getPixelColorIndex(int16_t x, int16_t y),
     getDepth();
+  uint8_t *
+    getBuffer(uint8_t bitmap);
 private:
   uint16_t width, height;
   uint8_t depth;
-  color24 palette[];
-  GFXcanvas1 bitplane[];
+  std::vector <color24> palette;
+  std::vector <GFXcanvas1*> bitplane;
+  //color24 palette[];
+  //GFXcanvas1 bitplane[];
 };
 
 #endif // _ADAFRUIT_GFX_H
