@@ -2094,38 +2094,38 @@ GFXiCanvas::GFXiCanvas(int16_t _width, int16_t _height, uint8_t _depth):Adafruit
       case 6:
       case 7:
       case 8:
-        palette[0] ={.r= 20, .g= 12, .b= 28};
-        palette[1] ={.r= 68, .g= 36, .b= 52};
-        palette[2] ={.r= 48, .g= 52, .b=109};
-        palette[3] ={.r= 78, .g= 74, .b= 78};
-        palette[4] ={.r=133, .g= 76, .b= 48};
-        palette[5] ={.r= 52, .g=101, .b= 36};
-        palette[6] ={.r=208, .g= 70, .b= 72};
-        palette[7] ={.r=117, .g=113, .b= 97};
-        palette[8] ={.r= 89, .g=125, .b=206};
-        palette[9] ={.r=210, .g=125, .b= 44};
-        palette[10]={.r=133, .g=149, .b=161};
-        palette[11]={.r=109, .g=170, .b= 44};
-        palette[12]={.r=210, .g=170, .b=153};
-        palette[13]={.r=109, .g=194, .b=202};
-        palette[14]={.r=218, .g=212, .b= 94};
-        palette[15]={.r=222, .g=238, .b=214};
-        palette[16]={.r= 10, .g=  6, .b= 14};
-        palette[17]={.r= 34, .g= 18, .b= 26};
-        palette[18]={.r= 24, .g= 26, .b= 54};
-        palette[19]={.r= 39, .g= 37, .b= 38};
-        palette[20]={.r= 66, .g= 38, .b= 24};
-        palette[21]={.r= 26, .g= 50, .b= 18};
-        palette[22]={.r=104, .g= 35, .b= 36};
-        palette[23]={.r= 58, .g= 56, .b= 48};
-        palette[24]={.r= 44, .g= 62, .b=103};
-        palette[25]={.r=105, .g= 62, .b= 22};
-        palette[26]={.r= 66, .g= 74, .b= 80};
-        palette[27]={.r= 54, .g= 85, .b= 22};
-        palette[28]={.r=105, .g= 85, .b= 76};
-        palette[29]={.r= 54, .g= 97, .b=101};
-        palette[30]={.r=109, .g=106, .b= 47};
-        palette[31]={.r=111, .g=119, .b=107};
+        palette.at( 0)={.r= 20, .g= 12, .b= 28};
+        palette.at( 1)={.r= 68, .g= 36, .b= 52};
+        palette.at( 2)={.r= 48, .g= 52, .b=109};
+        palette.at( 3)={.r= 78, .g= 74, .b= 78};
+        palette.at( 4)={.r=133, .g= 76, .b= 48};
+        palette.at( 5)={.r= 52, .g=101, .b= 36};
+        palette.at( 6)={.r=208, .g= 70, .b= 72};
+        palette.at( 7)={.r=117, .g=113, .b= 97};
+        palette.at( 8)={.r= 89, .g=125, .b=206};
+        palette.at( 9)={.r=210, .g=125, .b= 44};
+        palette.at(10)={.r=133, .g=149, .b=161};
+        palette.at(11)={.r=109, .g=170, .b= 44};
+        palette.at(12)={.r=210, .g=170, .b=153};
+        palette.at(13)={.r=109, .g=194, .b=202};
+        palette.at(14)={.r=218, .g=212, .b= 94};
+        palette.at(15)={.r=222, .g=238, .b=214};
+        palette.at(16)={.r= 10, .g=  6, .b= 14};
+        palette.at(17)={.r= 34, .g= 18, .b= 26};
+        palette.at(18)={.r= 24, .g= 26, .b= 54};
+        palette.at(19)={.r= 39, .g= 37, .b= 38};
+        palette.at(20)={.r= 66, .g= 38, .b= 24};
+        palette.at(21)={.r= 26, .g= 50, .b= 18};
+        palette.at(22)={.r=104, .g= 35, .b= 36};
+        palette.at(23)={.r= 58, .g= 56, .b= 48};
+        palette.at(24)={.r= 44, .g= 62, .b=103};
+        palette.at(25)={.r=105, .g= 62, .b= 22};
+        palette.at(26)={.r= 66, .g= 74, .b= 80};
+        palette.at(27)={.r= 54, .g= 85, .b= 22};
+        palette.at(28)={.r=105, .g= 85, .b= 76};
+        palette.at(29)={.r= 54, .g= 97, .b=101};
+        palette.at(30)={.r=109, .g=106, .b= 47};
+        palette.at(31)={.r=111, .g=119, .b=107};
         break;
     }
   }
@@ -2147,7 +2147,7 @@ uint8_t GFXiCanvas::getDepth(){
 }
 
 void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
-  if(colorIndex<1<<this->depth){
+  if(colorIndex<(1<<this->depth)){
     //Serial.printf("drawing pixel at x:%i, y:%i\n",x,y);
     for(uint8_t i=0;i<this->depth;i++) {
       //Serial.printf("bitplane:%i, val:%i\n",i,(colorIndex && 1<<i));
@@ -2163,7 +2163,7 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
 
 
 color24 GFXiCanvas::getColor(uint8_t i){
-  if(i<=1<this->depth){
+  if(i<(1<<this->depth)){
     return this->palette.at(i);
   }else{
     return (color24){0,0,0};
@@ -2171,7 +2171,9 @@ color24 GFXiCanvas::getColor(uint8_t i){
 }
 
 void GFXiCanvas::setColor(uint8_t i, color24 c){
+  if(i<(1<<this->depth)){
     this->palette.at(i)=c;
+  }
 }
 
 uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
@@ -2193,8 +2195,10 @@ color24 GFXiCanvas::getPixel24(int16_t x, int16_t y) {
 uint16_t GFXiCanvas::getPixel565(int16_t x, int16_t y) {
   color24 color;
   color = getPixel24(x,y);
+  uint16_t c;
   //Serial.printf("getPixel656, x:%i, y:%i, r=%i, g=%i, b=%i\n",x,y,color.r,color.g,color.b);
-  return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | ((color.b & 0xF8) >> 3);
+  c=(color.r & 0xF8) << 8 | (color.g & 0xFC) << 3 | (color.b & 0xF8) >> 3;
+  return c;
 }
 
 void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
