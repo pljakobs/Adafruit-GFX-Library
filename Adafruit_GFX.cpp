@@ -2214,3 +2214,9 @@ uint8_t *GFXiCanvas::getBuffer(uint8_t plane){
     return this->bitplane.at(plane)->getBuffer();
   }
 }
+
+void GFXiCanvas::clearDisplay(){
+  for(uint8_t i=0;i<this->depth;i++){
+    this->bitplane.at(i)->clearDisplay();
+  }
+}

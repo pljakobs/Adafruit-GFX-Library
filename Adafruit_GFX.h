@@ -248,7 +248,7 @@ public:
     drawPixel(int16_t x, int16_t y, uint8_t colorIndex),
     setColor(uint8_t index, color24 color),
     draw(int16_t x, int16_t y, Adafruit_GFX *display),
-    dump(void);
+    clearDisplay(void);
   color24
     getPixel24(int16_t x, int16_t y),
     getColor(uint8_t index);
