@@ -1771,10 +1771,11 @@ bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
 
         uint8_t   *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
 #ifdef __AVR__
-        c = *ptr | pgm_read_byte(&GFXsetBit[x & 7]);
+        c = *ptr & pgm_read_byte(&GFXsetBit[x & 7]);
 #else
-        c = *ptr | 0x80>>(x & 7);
+        c = *ptr & 0x80>>(x & 7);
 #endif
+      //Serial.printf("getPixel x: %i, y: %i, byte: %02x, mask: %02x, c: %i\n",x,y,*ptr, 0x80>>(x % 7),c);
       return c;
     }
     else{
@@ -2162,7 +2163,7 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
 
 
 color24 GFXiCanvas::getColor(uint8_t i){
-  if(i<=1<<this->depth){
+  if(i<=1<this->depth){
     return this->palette.at(i);
   }else{
     return (color24){0,0,0};
@@ -2178,7 +2179,7 @@ uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
   //Serial.printf("getPixelColorIndex x:%i, y:%i [",x,y);
   for(uint8_t i=0;i<this->depth;i++) {
       //Serial.printf("%i",this->bitplane.at(i)->getPixel(x,y));
-      c|=this->bitplane.at(i)->getPixel(x,y)<<i;
+      c|=(this->bitplane.at(i)->getPixel(x,y)&&0x01)<<i;
   }
   //Serial.printf("] c:%i\n",c)
   ;
@@ -2199,7 +2200,7 @@ uint16_t GFXiCanvas::getPixel565(int16_t x, int16_t y) {
 void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
   for (int16_t y=0;y<this->height;y++){
     for (int16_t x=0;x<this->width;x++){
-      display->drawPixel(x0+x, y0+y, getPixel565(x,y));
+      display->drawPixel(x0+x, y0+y, this->getPixel565(x,y));
     }
   }
 }
