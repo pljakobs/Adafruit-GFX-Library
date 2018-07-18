@@ -2161,7 +2161,6 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
   drawPixel(x,y,c);
 }
 
-
 color24 GFXiCanvas::getColor(uint8_t i){
   if(i<(1<<this->depth)){
     return this->palette.at(i);
