@@ -404,7 +404,7 @@ GFXiCanvas::GFXiCanvas(int16_t _width, int16_t _height, uint8_t _depth):Adafruit
     //color24 palette[numColors];
     for( uint8_t i=0;i<depth;i++){
       bitplane.push_back(new GFXcanvas1(width, height)); //Todo needs error handling if one bitplane cannot be allocated
-      Serial.printf("initialized bitplane[%i] at %i\n",i,bitplane.at(i)->getBuffer());
+      Serial.printf("initialized bitplane[%i] at %p\n",i,bitplane.at(i)->getBuffer());
     }
     Serial.printf("created bitplanes\n=================\n");
     /*
@@ -546,8 +546,6 @@ uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
       //Serial.printf("%i",this->bitplane.at(i)->getPixel(x,y));
       c|=(this->bitplane.at(i)->getPixel(x,y)&&0x01)<<i;
   }
-  //Serial.printf("] c:%i\n",c)
-  ;
   return c;
 }
 
@@ -573,9 +571,10 @@ void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
 }
 
 uint8_t *GFXiCanvas::getBuffer(uint8_t plane){
-  if(plane>=0 && plane <this->depth){
+  if(plane>=0 && plane<this->depth){
     return this->bitplane.at(plane)->getBuffer();
   }
+  return false;
 }
 
 void GFXiCanvas::clearDisplay(){
