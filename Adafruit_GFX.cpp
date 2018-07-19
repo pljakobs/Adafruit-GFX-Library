@@ -90,6 +90,15 @@ WIDTH(w), HEIGHT(h)
     _cp437    = false;
     gfxFont   = NULL;
 }
+/**************************************************************************/
+/*!
+ * default reports to be a "standard" 16Bit RGB565 color model for compatibility
+ * graphics device classes should implement their own function to report more
+ * appropriate values and allow for color depth management
+ */
+uint32_t Adafruit_GFX::getCapabilities(){
+	return 1<<GFXCAP_RGB565 ; //basic RGB565 display
+}
 
 /**************************************************************************/
 /*!

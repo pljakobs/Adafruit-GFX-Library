@@ -9,7 +9,13 @@
 #endif
 #include "gfxfont.h"
 
-/// A generic graphics superclass that can handle all sorts of drawing. At a minimum you can subclass and provide drawPixel(). At a maximum you can do a ton of overriding to optimize. Used for any/all Adafruit displays!
+#define GFXCAP_BW 1
+#define GFXCAP_GS 2
+#define GFXCAP_RGB12 3
+#define GFXCAP_RGB15 4
+#define GFXCAP_RGB565 5
+#define GFXCAP_DIM 16
+
 class Adafruit_GFX : public Print {
 
  public:
@@ -124,6 +130,7 @@ class Adafruit_GFX : public Print {
   int16_t getCursorX(void) const;
   int16_t getCursorY(void) const;
 
+  virtual uint32_t getCapabilities(void);
  protected:
   void
     charBounds(char c, int16_t *x, int16_t *y,
