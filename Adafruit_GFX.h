@@ -9,12 +9,15 @@
 #endif
 #include "gfxfont.h"
 
-#define GFXCAP_BW 1
-#define GFXCAP_GS 2
-#define GFXCAP_RGB12 3
-#define GFXCAP_RGB15 4
-#define GFXCAP_RGB565 5
-#define GFXCAP_DIM 16
+#ifndef __AVR__
+  #define GFX_ENABLE_24Bit //don't use the 24Bit interface on AVR devices, they won't have enough memory
+#endif
+
+typedef struct color24 {
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+} color24;
 
 class Adafruit_GFX : public Print {
 
@@ -25,17 +28,31 @@ class Adafruit_GFX : public Print {
   // This MUST be defined by the subclass:
   virtual void drawPixel(int16_t x, int16_t y, uint16_t color) = 0;    ///< Virtual drawPixel() function to draw to the screen/framebuffer/etc, must be overridden in subclass. @param x X coordinate.  @param y Y coordinate. @param color 16-bit pixel color.
 
+  #ifdef GFX_ENABLE_24Bit
+  virtual void drawPixel(int16_t x, int16_t y, color24 color) = 0;
+  #endif
   // TRANSACTION API / CORE DRAW API
   // These MAY be overridden by the subclass to provide device-specific
   // optimized code.  Otherwise 'generic' versions are used.
   virtual void startWrite(void);
-  virtual void writePixel(int16_t x, int16_t y, uint16_t color);
-  virtual void writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
-  virtual void writeFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
-  virtual void writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
-  virtual void writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
   virtual void endWrite(void);
 
+  virtual void writePixel(int16_t x, int16_t y, uint16_t color);
+  virtual void writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+  virtual void writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+  virtual void writeFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+  virtual void writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+
+  // 24 Bit interface
+  #ifdef GFX_ENABLE_24Bit
+  // These MAY be overridden by the subclass to provide device-specific
+  // optimized code.  Otherwise 'generic' versions are used.
+  virtual void writePixel(int16_t x, int16_t y, color24 color);
+  virtual void writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h, color24 color);
+  virtual void writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, color24 color);
+  virtual void writeFastVLine(int16_t x, int16_t y, int16_t h, color24 color);
+  virtual void writeFastHLine(int16_t x, int16_t y, int16_t w, color24 color);
+  #endif
   // CONTROL API
   // These MAY be overridden by the subclass to provide device-specific
   // optimized code.  Otherwise 'generic' versions are used.
@@ -43,19 +60,32 @@ class Adafruit_GFX : public Print {
   virtual void invertDisplay(boolean i);
   virtual void display();
 
+
   // BASIC DRAW API
   // These MAY be overridden by the subclass to provide device-specific
   // optimized code.  Otherwise 'generic' versions are used.
-  virtual void
+
     // It's good to implement those, even if using transaction API
-    drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color),
-    drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color),
-    fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color),
-    fillScreen(uint16_t color),
-    clearDisplay(),
+    virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+    virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+    virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+    virtual void fillScreen(uint16_t color);
+    virtual void clearDisplay();
     // Optional and probably not necessary to change
-    drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color),
-    drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+    virtual void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+    virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+    uint16_t color565(color24 color);
+
+    // 24 Bit interface
+    #ifdef GFX_ENABLE_24Bit
+    virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, color24 color);
+    virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, color24 color);
+    virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, color24 color);
+    virtual void fillScreen(color24 color);
+    // Optional and probably not necessary to change
+    virtual void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, color24 color);
+    virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, color24 color);
+    #endif
 
   // These exist only with Adafruit_GFX (no subclass overrides)
   void
@@ -115,6 +145,38 @@ class Adafruit_GFX : public Print {
     getTextBounds(const __FlashStringHelper *s, int16_t x, int16_t y, int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h),
     getTextBounds(const String &str, int16_t x, int16_t y, int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
 
+    // 24Bit interface
+    #ifdef GFX_ENABLE_24Bit
+  void
+    rawCircle(int16_t x0, int16_t y0, int16_t r, color24 color),
+    drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
+      color24 color),
+    fillCircle(int16_t x0, int16_t y0, int16_t r, color24 color),
+    fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
+      int16_t delta, color24 color),
+    drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+      int16_t x2, int16_t y2, color24 color),
+    fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+      int16_t x2, int16_t y2, color24 color),
+    drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
+      int16_t radius, color24 color),
+    fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
+      int16_t radius, color24 color),
+    drawBitmap(int16_t x, int16_t y, const uint8_t bitmap[],
+      int16_t w, int16_t h, color24 color),
+    drawBitmap(int16_t x, int16_t y, const uint8_t bitmap[],
+      int16_t w, int16_t h, color24 color, uint16_t bg),
+    drawBitmap(int16_t x, int16_t y, uint8_t *bitmap,
+      int16_t w, int16_t h, color24 color),
+    drawBitmap(int16_t x, int16_t y, uint8_t *bitmap,
+      int16_t w, int16_t h, color24 color, uint16_t bg),
+    drawXBitmap(int16_t x, int16_t y, const uint8_t bitmap[],
+      int16_t w, int16_t h, color24 color),
+    drawChar(int16_t x, int16_t y, unsigned char c, color24 color,
+      uint16_t bg, uint8_t size),
+    setTextColor(color24 c),
+    setTextColor(color24 c, color24 bg);
+    #endif
 
 #if ARDUINO >= 100
   virtual size_t write(uint8_t);
@@ -131,7 +193,6 @@ class Adafruit_GFX : public Print {
   int16_t getCursorX(void) const;
   int16_t getCursorY(void) const;
 
-  virtual uint32_t getCapabilities(void);
  protected:
   void
     charBounds(char c, int16_t *x, int16_t *y,
@@ -189,4 +250,4 @@ class Adafruit_GFX_Button {
 
   boolean currstate, laststate;
 };
-#endif 
+#endif

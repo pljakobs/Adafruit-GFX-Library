@@ -12,13 +12,6 @@
 #endif
 #include <vector>
 
-typedef struct color24 {
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
-} color24;
-
-
 /// A GFX 1-bit canvas context for graphics
 class GFXcanvas1 : public Adafruit_GFX {
  public:

@@ -1,4 +1,7 @@
-#include "Adafruit_GFX-Canvas.h"
+#include "Adafruit_GFX_Canvas.h"
+#ifndef Adafruit_GFX
+  #include "Adafruit_GFX.h"
+#endif
 #ifdef __AVR__
   #include <avr/pgmspace.h>
 #elif defined(ESP8266) || defined(ESP32)
@@ -565,7 +568,11 @@ uint16_t GFXiCanvas::getPixel565(int16_t x, int16_t y) {
 void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
   for (int16_t y=0;y<this->height;y++){
     for (int16_t x=0;x<this->width;x++){
-      display->drawPixel(x0+x, y0+y, this->getPixel565(x,y));
+      #ifdef GFX_ENABLE_24Bit
+        display->drawPixel(x0+x, y0+y, this->getPixel24(x,y));
+      #elif
+        display->drawPixel(x0+x, y0+y, this->getPixel565(x,y));
+      #endif
     }
   }
 }
