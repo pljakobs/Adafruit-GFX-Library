@@ -140,7 +140,47 @@ void Adafruit_GFX::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
         }
     }
 }
+#ifdef GFX_ENABLE_24Bit
+void Adafruit_GFX::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+        color24 color) {
+    int16_t steep = abs(y1 - y0) > abs(x1 - x0);
+    if (steep) {
+        _swap_int16_t(x0, y0);
+        _swap_int16_t(x1, y1);
+    }
 
+    if (x0 > x1) {
+        _swap_int16_t(x0, x1);
+        _swap_int16_t(y0, y1);
+    }
+
+    int16_t dx, dy;
+    dx = x1 - x0;
+    dy = abs(y1 - y0);
+
+    int16_t err = dx / 2;
+    int16_t ystep;
+
+    if (y0 < y1) {
+        ystep = 1;
+    } else {
+        ystep = -1;
+    }
+
+    for (; x0<=x1; x0++) {
+        if (steep) {
+            writePixel(y0, x0, color);
+        } else {
+            writePixel(x0, y0, color);
+        }
+        err -= dy;
+        if (err < 0) {
+            y0 += ystep;
+            err += dx;
+        }
+    }
+}
+#endif
 /**************************************************************************/
 /*!
    @brief    Start a display-writing routine, overwrite in subclasses.
@@ -163,6 +203,14 @@ void Adafruit_GFX::writePixel(int16_t x, int16_t y, uint16_t color){
 
 #ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writePixel(int16_t x, int16_t y, color24 color){
+    writePixel(x,y,color);
+}
+
+/*
+ * This is a drawPixel stub that *must* be overwritten by a driver class
+ * implementing a true 24Bit interface
+ */
+void Adafruit_GFX::drawPixel(int16_t x, int16_t y, color24 color){
     writePixel(x,y,color565(color));
 }
 #endif
@@ -186,7 +234,7 @@ void Adafruit_GFX::writeFastVLine(int16_t x, int16_t y,
 
 #ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writeFastVLine(int16_t x, int16_t y,
-        int16_t h, color color) {
+        int16_t h, color24 color) {
     // Overwrite in subclasses if startWrite is defined!
     // Can be just writeLine(x, y, x, y+h-1, color);
     // or writeFillRect(x, y, 1, h, color);
@@ -212,7 +260,7 @@ void Adafruit_GFX::writeFastHLine(int16_t x, int16_t y,
 
 #ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writeFastHLine(int16_t x, int16_t y,
-        int16_t w, uint16_t color) {
+        int16_t w, color24 color) {
     // Overwrite in subclasses if startWrite is defined!
     // Example: writeLine(x, y, x+w-1, y, color);
     // or writeFillRect(x, y, w, 1, color);
@@ -877,7 +925,7 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
 }
 #ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
-        int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color) {
+        int16_t x1, int16_t y1, int16_t x2, int16_t y2, color24 color) {
 
     int16_t a, b, y, last;
 

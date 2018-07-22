@@ -28,12 +28,11 @@ class Adafruit_GFX : public Print {
   // This MUST be defined by the subclass:
   virtual void drawPixel(int16_t x, int16_t y, uint16_t color) = 0;    ///< Virtual drawPixel() function to draw to the screen/framebuffer/etc, must be overridden in subclass. @param x X coordinate.  @param y Y coordinate. @param color 16-bit pixel color.
 
-  #ifdef GFX_ENABLE_24Bit
-  virtual void drawPixel(int16_t x, int16_t y, color24 color) = 0;
-  #endif
-  // TRANSACTION API / CORE DRAW API
-  // These MAY be overridden by the subclass to provide device-specific
-  // optimized code.  Otherwise 'generic' versions are used.
+  /*
+   * TRANSACTION API / CORE DRAW API
+   * These MAY be overridden by the subclass to provide device-specific
+   * optimized code.  Otherwise 'generic' versions are used.
+   */
   virtual void startWrite(void);
   virtual void endWrite(void);
 
@@ -45,27 +44,40 @@ class Adafruit_GFX : public Print {
 
   // 24 Bit interface
   #ifdef GFX_ENABLE_24Bit
-  // These MAY be overridden by the subclass to provide device-specific
-  // optimized code.  Otherwise 'generic' versions are used.
+  /*
+   * this writePixel() overload *must* be overwritten by a driver class that wants to
+   * implement a true 24 Bit Interface and handle the conversion and displaying of
+   * color in the display defined hardware bit depth
+   */
+   virtual void drawPixel(int16_t x, int16_t y, color24 color);
+
+  /*
+   * These MAY be overridden by the subclass to provide device-specific
+   * optimized code.  Otherwise 'generic' versions are used.
+   */
   virtual void writePixel(int16_t x, int16_t y, color24 color);
   virtual void writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h, color24 color);
   virtual void writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, color24 color);
   virtual void writeFastVLine(int16_t x, int16_t y, int16_t h, color24 color);
   virtual void writeFastHLine(int16_t x, int16_t y, int16_t w, color24 color);
   #endif
-  // CONTROL API
-  // These MAY be overridden by the subclass to provide device-specific
-  // optimized code.  Otherwise 'generic' versions are used.
+
+  /*
+   * CONTROL API
+   * optimized code.  Otherwise 'generic' versions are used.
+   */
   virtual void setRotation(uint8_t r);
   virtual void invertDisplay(boolean i);
   virtual void display();
 
 
-  // BASIC DRAW API
-  // These MAY be overridden by the subclass to provide device-specific
-  // optimized code.  Otherwise 'generic' versions are used.
-
-    // It's good to implement those, even if using transaction API
+  /*
+   * BASIC DRAW API
+   * These MAY be overridden by the subclass to provide device-specific
+   * optimized code.  Otherwise 'generic' versions are used.
+   *
+   * It's good to implement those, even if using transaction API
+   */
     virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
     virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
     virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
@@ -148,7 +160,7 @@ class Adafruit_GFX : public Print {
     // 24Bit interface
     #ifdef GFX_ENABLE_24Bit
   void
-    rawCircle(int16_t x0, int16_t y0, int16_t r, color24 color),
+    drawCircle(int16_t x0, int16_t y0, int16_t r, color24 color),
     drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
       color24 color),
     fillCircle(int16_t x0, int16_t y0, int16_t r, color24 color),

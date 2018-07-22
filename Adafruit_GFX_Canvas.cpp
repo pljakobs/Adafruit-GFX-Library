@@ -419,8 +419,9 @@ GFXiCanvas::GFXiCanvas(int16_t _width, int16_t _height, uint8_t _depth):Adafruit
     }
     switch (depth) {
       case 1:
-        palette.at(0)={.r=  0, .g=  0, .b=  0};
-        palette.at(1)={.r=  0, .g=  0, .b= 16}; //ssd1306 LCDs need uint16_t 1 to draw pixsel
+        //palette.at(0)={.r=  0, .g=  0, .b=  0};
+        palette.at(0)={ 0,  0,  0};
+        palette.at(1)={255,255,255}; //ssd1306 LCDs need uint16_t 1 to draw pixsel
         break;
       case 2:
         palette.at(0)={.r=  0, .g=  0, .b=  0};
