@@ -8,7 +8,7 @@
  #include "WProgram.h"
 #endif
 #include "gfxfont.h"
-
+#include "htmlcolors.h"
 #ifndef __AVR__
   #define GFX_ENABLE_24Bit //don't use the 24Bit interface on AVR devices, they won't have enough memory
 #endif
