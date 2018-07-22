@@ -1,3 +1,18 @@
+/*
+ * collection of 141 html defined colors to be referenced by name.
+ * to directly use them in a draw routine, use something like
+ * display.drawPixel(x,y,LIGHTCORAL);
+ * to use it on an interleaved bitmap canvas, you have to add it to a
+ * pallette position first.
+ * in Order to do that you need to call
+ * canvas.setColor(index,colorname);
+ * for example:
+ * canvas.setColor(7,CRIMSON);
+ * after that, you can call
+ * canvas.drawPixel(x,y,7);
+ * to draw a crimson colored pixel.
+ */
+ 
 #define INDIANRED       {205, 92, 92}
 #define LIGHTCORAL      {240, 128, 128}
 #define SALMON          {250, 128, 114}
@@ -140,6 +155,7 @@
 #define DARKSLATEGRAY   {47, 79, 79}
 #define BLACK           {0, 0, 0}
 
+/*
 #define PAL_INDIANRED	  1
 #define PAL_LIGHTCORAL	2
 #define PAL_SALMON	    3
@@ -281,3 +297,4 @@
 #define PAL_SLATEGRAY	139
 #define PAL_DARKSLATEGRAY	140
 #define PAL_BLACK 141
+*/
