@@ -26,7 +26,10 @@ typedef volatile uint32_t RwReg;
 
 #include "Adafruit_SPITFT_Macros.h"
 
-/// A heavily optimized SPI display subclass of GFX. Manages SPI bitbanging, transactions, DMA, etc! Despite being called SPITFT, the classic SPI data/command interface is also used by OLEDs.
+/*
+ * A heavily optimized SPI display subclass of GFX. Manages SPI bitbanging, transactions, DMA, etc!
+ * Despite being called SPITFT, the classic SPI data/command interface is also used by OLEDs.
+ */
 class Adafruit_SPITFT : public Adafruit_GFX {
     protected:
 
@@ -85,13 +88,13 @@ class Adafruit_SPITFT : public Adafruit_GFX {
         uint32_t _freq;         ///< SPI clock frequency (for hardware SPI)
 #if defined (__AVR__) || defined(TEENSYDUINO) || defined (ESP8266) || defined (ESP32)
         int8_t  _cs, _dc, _rst, _sclk, _mosi, _miso;
-#else 
-        int32_t  _cs,            ///< Arduino pin # for chip-select pin 
-	  _dc,                   ///< Arduino pin # for data-command pin 
-	  _rst,                  ///< Arduino pin # for reset pin 
-	  _sclk,                 ///< Arduino pin # for SPI clock pin 
-	  _mosi,                 ///< Arduino pin # for SPI MOSI pin 
-	  _miso;                 ///< Arduino pin # for SPI MISO pin 
+#else
+        int32_t  _cs,            ///< Arduino pin # for chip-select pin
+	  _dc,                   ///< Arduino pin # for data-command pin
+	  _rst,                  ///< Arduino pin # for reset pin
+	  _sclk,                 ///< Arduino pin # for SPI clock pin
+	  _mosi,                 ///< Arduino pin # for SPI MOSI pin
+	  _miso;                 ///< Arduino pin # for SPI MISO pin
 #endif
 
 #ifdef USE_FAST_PINIO
@@ -100,11 +103,11 @@ class Adafruit_SPITFT : public Adafruit_GFX {
 	  *clkport,             ///< Direct chip register for toggling CLK with fast bitbang IO
 	  *dcport,              ///< Direct chip register for toggling DC with fast bitbang IO
 	  *csport;              ///< Direct chip register for toggling CS with fast bitbang IO
-        RwReg  mosipinmask,     ///< bitmask for turning on/off MOSI with fast register bitbang IO 
-	  misopinmask,          ///< bitmask for turning on/off MISO with fast register bitbang IO 
-	  clkpinmask,           ///< bitmask for turning on/off CLK with fast register bitbang IO 
-	  cspinmask,            ///< bitmask for turning on/off CS with fast register bitbang IO 
-	  dcpinmask;            ///< bitmask for turning on/off DC with fast register bitbang IO 
+        RwReg  mosipinmask,     ///< bitmask for turning on/off MOSI with fast register bitbang IO
+	  misopinmask,          ///< bitmask for turning on/off MISO with fast register bitbang IO
+	  clkpinmask,           ///< bitmask for turning on/off CLK with fast register bitbang IO
+	  cspinmask,            ///< bitmask for turning on/off CS with fast register bitbang IO
+	  dcpinmask;            ///< bitmask for turning on/off DC with fast register bitbang IO
 #endif
 
         void        writeCommand(uint8_t cmd);
