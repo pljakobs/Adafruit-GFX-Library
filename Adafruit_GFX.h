@@ -9,8 +9,10 @@
 #endif
 #include "gfxfont.h"
 #include "htmlcolors.h"
+
 #ifndef __AVR__
-  #define GFX_ENABLE_24Bit //don't use the 24Bit interface on AVR devices, they won't have enough memory
+  //don't use the 24Bit interface on AVR devices, they won't have enough memory
+  #define GFX_ENABLE_24Bit 1
 #endif
 
 typedef struct color24 {
@@ -27,6 +29,12 @@ class Adafruit_GFX : public Print {
 
   // This MUST be defined by the subclass:
   virtual void drawPixel(int16_t x, int16_t y, uint16_t color) = 0;    ///< Virtual drawPixel() function to draw to the screen/framebuffer/etc, must be overridden in subclass. @param x X coordinate.  @param y Y coordinate. @param color 16-bit pixel color.
+  /*
+   * this drawPixel() overload *must* be overwritten by a driver class that wants to
+   * implement a true 24 Bit Interface and handle the conversion and displaying of
+   * color in the display defined hardware bit depth
+   */
+  virtual void drawPixel(int16_t x, int16_t y, color24 color);
 
   /*
    * TRANSACTION API / CORE DRAW API
@@ -43,14 +51,7 @@ class Adafruit_GFX : public Print {
   virtual void writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 
   // 24 Bit interface
-  #ifdef GFX_ENABLE_24Bit
-  /*
-   * this writePixel() overload *must* be overwritten by a driver class that wants to
-   * implement a true 24 Bit Interface and handle the conversion and displaying of
-   * color in the display defined hardware bit depth
-   */
-   virtual void drawPixel(int16_t x, int16_t y, color24 color);
-
+  //#ifdef GFX_ENABLE_24Bit
   /*
    * These MAY be overridden by the subclass to provide device-specific
    * optimized code.  Otherwise 'generic' versions are used.
@@ -60,7 +61,7 @@ class Adafruit_GFX : public Print {
   virtual void writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, color24 color);
   virtual void writeFastVLine(int16_t x, int16_t y, int16_t h, color24 color);
   virtual void writeFastHLine(int16_t x, int16_t y, int16_t w, color24 color);
-  #endif
+  //#endif
 
   /*
    * CONTROL API
@@ -89,7 +90,7 @@ class Adafruit_GFX : public Print {
     uint16_t color565(color24 color);
 
     // 24 Bit interface
-    #ifdef GFX_ENABLE_24Bit
+    //#ifdef GFX_ENABLE_24Bit
     virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, color24 color);
     virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, color24 color);
     virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, color24 color);
@@ -97,7 +98,7 @@ class Adafruit_GFX : public Print {
     // Optional and probably not necessary to change
     virtual void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, color24 color);
     virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, color24 color);
-    #endif
+    //#endif
 
   // These exist only with Adafruit_GFX (no subclass overrides)
   void
@@ -158,7 +159,7 @@ class Adafruit_GFX : public Print {
     getTextBounds(const String &str, int16_t x, int16_t y, int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
 
     // 24Bit interface
-    #ifdef GFX_ENABLE_24Bit
+    //#ifdef GFX_ENABLE_24Bit
   void
     drawCircle(int16_t x0, int16_t y0, int16_t r, color24 color),
     drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
@@ -188,7 +189,7 @@ class Adafruit_GFX : public Print {
       uint16_t bg, uint8_t size),
     setTextColor(color24 c),
     setTextColor(color24 c, color24 bg);
-    #endif
+    //#endif
 
 #if ARDUINO >= 100
   virtual size_t write(uint8_t);

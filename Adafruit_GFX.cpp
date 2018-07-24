@@ -140,7 +140,7 @@ void Adafruit_GFX::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
         }
     }
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
         color24 color) {
     int16_t steep = abs(y1 - y0) > abs(x1 - x0);
@@ -180,7 +180,7 @@ void Adafruit_GFX::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
         }
     }
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    Start a display-writing routine, overwrite in subclasses.
@@ -201,19 +201,19 @@ void Adafruit_GFX::writePixel(int16_t x, int16_t y, uint16_t color){
     drawPixel(x, y, color);
 }
 
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writePixel(int16_t x, int16_t y, color24 color){
     writePixel(x,y,color);
 }
+//#endif
 
 /*
  * This is a drawPixel stub that *must* be overwritten by a driver class
  * implementing a true 24Bit interface
  */
 void Adafruit_GFX::drawPixel(int16_t x, int16_t y, color24 color){
-    writePixel(x,y,color565(color));
+    drawPixel(x,y,color565(color));
 }
-#endif
 
 /**************************************************************************/
 /*!
@@ -232,7 +232,7 @@ void Adafruit_GFX::writeFastVLine(int16_t x, int16_t y,
     drawFastVLine(x, y, h, color);
 }
 
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writeFastVLine(int16_t x, int16_t y,
         int16_t h, color24 color) {
     // Overwrite in subclasses if startWrite is defined!
@@ -240,7 +240,7 @@ void Adafruit_GFX::writeFastVLine(int16_t x, int16_t y,
     // or writeFillRect(x, y, 1, h, color);
     writeFastVLine(x, y, h, color565(color));
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    Write a perfectly horizontal line, overwrite in subclasses if startWrite is defined!
@@ -258,7 +258,7 @@ void Adafruit_GFX::writeFastHLine(int16_t x, int16_t y,
     drawFastHLine(x, y, w, color);
 }
 
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writeFastHLine(int16_t x, int16_t y,
         int16_t w, color24 color) {
     // Overwrite in subclasses if startWrite is defined!
@@ -266,7 +266,7 @@ void Adafruit_GFX::writeFastHLine(int16_t x, int16_t y,
     // or writeFillRect(x, y, w, 1, color);
     writeFastHLine(x, y, w, color565(color));
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    Write a rectangle completely with one color, overwrite in subclasses if startWrite is defined!
@@ -283,13 +283,13 @@ void Adafruit_GFX::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
     fillRect(x,y,w,h,color);
 }
 
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
         color24 color) {
     // Overwrite in subclasses if desired!
     fillRect(x,y,w,h,color);
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    End a display-writing routine, overwrite in subclasses if startWrite is defined!
@@ -313,14 +313,14 @@ void Adafruit_GFX::drawFastVLine(int16_t x, int16_t y,
     writeLine(x, y, x, y+h-1, color);
     endWrite();
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawFastVLine(int16_t x, int16_t y,
         int16_t h, color24 color) {
     startWrite();
     writeLine(x, y, x, y+h-1, color565(color));
     endWrite();
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    Draw a perfectly horizontal line (this is often optimized in a subclass!)
@@ -337,14 +337,14 @@ void Adafruit_GFX::drawFastHLine(int16_t x, int16_t y,
     endWrite();
 }
 
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawFastHLine(int16_t x, int16_t y,
         int16_t w, color24 color) {
     startWrite();
     writeLine(x, y, x+w-1, y, color565(color));
     endWrite();
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    Fill a rectangle completely with one color. Update in subclasses if desired!
@@ -355,24 +355,22 @@ void Adafruit_GFX::drawFastHLine(int16_t x, int16_t y,
    @param    color 16-bit 5-6-5 Color to fill with
 */
 /**************************************************************************/
-void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
-        uint16_t color) {
+void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
     startWrite();
     for (int16_t i=x; i<x+w; i++) {
         writeFastVLine(i, y, h, color);
     }
     endWrite();
 }
-#ifdef GFX_ENABLE_24Bit
-void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
-        color24 color) {
+//#ifdef GFX_ENABLE_24Bit
+void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, color24 color) {
     startWrite();
     for (int16_t i=x; i<x+w; i++) {
         writeFastVLine(i, y, h, color);
     }
     endWrite();
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    Fill the screen completely with one color. Update in subclasses if desired!
@@ -382,11 +380,11 @@ void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
 void Adafruit_GFX::fillScreen(uint16_t color) {
     fillRect(0, 0, _width, _height, color);
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::fillScreen(color24 color) {
     fillRect(0, 0, _width, _height, color);
 }
-#endif
+//#endif
 
 // should be extended by the actual display if implemented (like the 1306 OLED modules)
 void Adafruit_GFX::clearDisplay(){
@@ -422,7 +420,7 @@ void Adafruit_GFX::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
         endWrite();
     }
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
         color24 color) {
     // Update in subclasses if desired!
@@ -438,7 +436,7 @@ void Adafruit_GFX::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
         endWrite();
     }
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    Draw a circle outline
@@ -483,7 +481,7 @@ void Adafruit_GFX::drawCircle(int16_t x0, int16_t y0, int16_t r,
     }
     endWrite();
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawCircle(int16_t x0, int16_t y0, int16_t r,
         color24 color) {
     int16_t f = 1 - r;
@@ -519,7 +517,7 @@ void Adafruit_GFX::drawCircle(int16_t x0, int16_t y0, int16_t r,
     }
     endWrite();
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    Quarter-circle drawer, used to do circles and roundrects
@@ -565,7 +563,7 @@ void Adafruit_GFX::drawCircleHelper( int16_t x0, int16_t y0,
         }
     }
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawCircleHelper( int16_t x0, int16_t y0,
         int16_t r, uint8_t cornername, color24 color) {
     int16_t f     = 1 - r;
@@ -601,7 +599,7 @@ void Adafruit_GFX::drawCircleHelper( int16_t x0, int16_t y0,
         }
     }
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    Draw a circle with filled color
@@ -618,7 +616,7 @@ void Adafruit_GFX::fillCircle(int16_t x0, int16_t y0, int16_t r,
     fillCircleHelper(x0, y0, r, 3, 0, color);
     endWrite();
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::fillCircle(int16_t x0, int16_t y0, int16_t r,
         color24 color) {
     startWrite();
@@ -626,7 +624,7 @@ void Adafruit_GFX::fillCircle(int16_t x0, int16_t y0, int16_t r,
     fillCircleHelper(x0, y0, r, 3, 0, color);
     endWrite();
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief    Quarter-circle drawer with fill, used to do circles and roundrects
@@ -667,7 +665,7 @@ void Adafruit_GFX::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
         }
     }
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
         uint8_t cornername, int16_t delta, color24 color) {
 
@@ -697,7 +695,7 @@ void Adafruit_GFX::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
         }
     }
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief   Draw a rectangle with no fill color
@@ -717,7 +715,7 @@ void Adafruit_GFX::drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
     writeFastVLine(x+w-1, y, h, color);
     endWrite();
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
         color24 color) {
     startWrite();
@@ -727,7 +725,7 @@ void Adafruit_GFX::drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
     writeFastVLine(x+w-1, y, h, color);
     endWrite();
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief   Draw a rounded rectangle with no fill color
@@ -754,7 +752,7 @@ void Adafruit_GFX::drawRoundRect(int16_t x, int16_t y, int16_t w,
     drawCircleHelper(x+r    , y+h-r-1, r, 8, color);
     endWrite();
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawRoundRect(int16_t x, int16_t y, int16_t w,
         int16_t h, int16_t r, color24 color) {
     // smarter version
@@ -770,7 +768,7 @@ void Adafruit_GFX::drawRoundRect(int16_t x, int16_t y, int16_t w,
     drawCircleHelper(x+r    , y+h-r-1, r, 8, color);
     endWrite();
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief   Draw a rounded rectangle with fill color
@@ -793,7 +791,7 @@ void Adafruit_GFX::fillRoundRect(int16_t x, int16_t y, int16_t w,
     fillCircleHelper(x+r    , y+r, r, 2, h-2*r-1, color);
     endWrite();
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::fillRoundRect(int16_t x, int16_t y, int16_t w,
         int16_t h, int16_t r, color24 color) {
     // smarter version
@@ -805,7 +803,7 @@ void Adafruit_GFX::fillRoundRect(int16_t x, int16_t y, int16_t w,
     fillCircleHelper(x+r    , y+r, r, 2, h-2*r-1, color);
     endWrite();
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief   Draw a triangle with no fill color
@@ -824,14 +822,14 @@ void Adafruit_GFX::drawTriangle(int16_t x0, int16_t y0,
     drawLine(x1, y1, x2, y2, color);
     drawLine(x2, y2, x0, y0, color);
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawTriangle(int16_t x0, int16_t y0,
         int16_t x1, int16_t y1, int16_t x2, int16_t y2, color24 color) {
     drawLine(x0, y0, x1, y1, color);
     drawLine(x1, y1, x2, y2, color);
     drawLine(x2, y2, x0, y0, color);
 }
-#endif
+//#endif
 /**************************************************************************/
 /*!
    @brief     Draw a triangle with color-fill
@@ -923,7 +921,7 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
     }
     endWrite();
 }
-#ifdef GFX_ENABLE_24Bit
+//#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
         int16_t x1, int16_t y1, int16_t x2, int16_t y2, color24 color) {
 
@@ -1003,7 +1001,7 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
     }
     endWrite();
 }
-#endif
+//#endif
 // convert 24Bit color to RGB565
 uint16_t Adafruit_GFX::color565(color24 color) {
     return ((color.r & 0xF8) << 8) | ((color.g & 0xFC) << 3) | ((color.b & 0xF8) >> 3);

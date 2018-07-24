@@ -133,6 +133,7 @@ bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
                 t = x;
                 x = y;
                 y = HEIGHT - 1 - t;
+
                 break;
         }
 
@@ -143,7 +144,12 @@ bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
         c = *ptr & 0x80>>(x & 7);
 #endif
       //Serial.printf("getPixel x: %i, y: %i, byte: %02x, mask: %02x, c: %i\n",x,y,*ptr, 0x80>>(x % 7),c);
-      return c;
+      if (c!=0){
+        return 0x01;
+      }
+      else{
+        return 0x0;
+      }
     }
     else{
       return false;
@@ -519,18 +525,27 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
     //Serial.printf("drawing pixel at x:%i, y:%i\n",x,y);
     for(uint8_t i=0;i<this->depth;i++) {
       //Serial.printf("bitplane:%i, val:%i\n",i,(colorIndex && 1<<i));
-      this->bitplane.at(i)->drawPixel(x,y,(colorIndex && (1<<i)));
+      this->bitplane.at(i)->drawPixel(x,y,(colorIndex & (1<<i)));
       }
   }
 }
 
+/*
+ * this is for compatibility with other libraries that don't know about
+ * indexed colors. Basically, it will just use the lower 8 bits of the
+ * color value as the index. Depending on the actual number of bitplanes,
+ * this is further reduced.
+ */
 void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
-  uint8_t c=(uint8_t)(colorIndex&0xff);
+    uint8_t c=(uint8_t)(colorIndex&0xff);
   drawPixel(x,y,c);
 }
 
 color24 GFXiCanvas::getColor(uint8_t i){
+  //if(i!=0) Serial.printf("index: %i ",i);
   if(i<(1<<this->depth)){
+    color24 c=this->palette.at(i);
+    //if(i!=0) Serial.printf("color: r: %i, g: %i, b: %i\n",c.r,c.g,c.b);
     return this->palette.at(i);
   }else{
     return (color24){0,0,0};
@@ -547,10 +562,13 @@ uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
   uint8_t c=0;
   //Serial.printf("getPixelColorIndex x:%i, y:%i [",x,y);
   for(uint8_t i=0;i<this->depth;i++) {
-      //Serial.printf("%i",this->bitplane.at(i)->getPixel(x,y));
-      c|=(this->bitplane.at(i)->getPixel(x,y)&&0x01)<<i;
-  }
-  return c;
+      //Serial.printf("bitplane %i - ",i);
+      //uint8_t b=(this->bitplane.at(i)->getPixel(x,y) & 0x01)<<i;
+      c=c|(this->bitplane.at(i)->getPixel(x,y) & 0x01)<<i;
+      //Serial.printf("x: %i, y: %i, i: %i bit: %i col: %i\n",x,y,i,b,c);
+    }
+    //Serial.printf("x: %i, y: %i, c: %i\n",x,y,c);
+    return c;
 }
 
 color24 GFXiCanvas::getPixel24(int16_t x, int16_t y) {
@@ -570,7 +588,9 @@ void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
   for (int16_t y=0;y<this->height;y++){
     for (int16_t x=0;x<this->width;x++){
       #ifdef GFX_ENABLE_24Bit
+        //color24 pc=this->getPixel24(x,y);
         display->drawPixel(x0+x, y0+y, this->getPixel24(x,y));
+        //if(pc.r+pc.g+pc.b!=0) Serial.printf("x: %i, y: %i, col: .r=%i, .g=%i, g=%i\n",x,y,pc.r,pc.g,pc.b);
       #elif
         display->drawPixel(x0+x, y0+y, this->getPixel565(x,y));
       #endif
