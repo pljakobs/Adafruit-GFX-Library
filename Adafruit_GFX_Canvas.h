@@ -20,6 +20,7 @@ class GFXcanvas1 : public Adafruit_GFX {
   void     drawPixel(int16_t x, int16_t y, uint16_t color),
            fillScreen(uint16_t color);
   uint8_t *getBuffer(void);
+  uint8_t getByte(int16_t x, int16_t y);
   bool    getPixel(int16_t x, int16_t y);
  private:
   uint8_t *buffer;
@@ -63,6 +64,7 @@ public:
     drawPixel(int16_t x, int16_t y, uint8_t colorIndex),
     setColor(uint8_t index, color24 color),
     draw(int16_t x, int16_t y, Adafruit_GFX *display),
+    quickDraw(int16_t x, int16_t y, Adafruit_GFX *display),
     clearDisplay(void);
   color24
     getPixel24(int16_t x, int16_t y),

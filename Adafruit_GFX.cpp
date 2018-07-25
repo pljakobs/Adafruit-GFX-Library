@@ -279,6 +279,7 @@ void Adafruit_GFX::writeFastHLine(int16_t x, int16_t y,
 /**************************************************************************/
 void Adafruit_GFX::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
         uint16_t color) {
+          Serial.printf("called writeFilledRect in Baseclass with color565\n");
     // Overwrite in subclasses if desired!
     fillRect(x,y,w,h,color);
 }
@@ -286,6 +287,7 @@ void Adafruit_GFX::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
 //#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
         color24 color) {
+        Serial.printf("called writeFilledRect in Baseclass with color24\n");
     // Overwrite in subclasses if desired!
     fillRect(x,y,w,h,color);
 }

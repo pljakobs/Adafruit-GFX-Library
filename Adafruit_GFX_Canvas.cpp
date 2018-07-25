@@ -155,6 +155,37 @@ bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
       return false;
     }
 }
+
+/*
+ * read a full eight bits from a bitplane.
+ * only used to quickly draw on screen
+ */
+uint8_t GFXcanvas1::getByte(int16_t x, int16_t y) {
+  if(buffer) {
+      if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return false;
+
+      int16_t t;
+      switch(rotation) {
+          case 1:
+              t = x;
+              x = WIDTH  - 1 - y;
+              y = t;
+              break;
+          case 2:
+              x = WIDTH  - 1 - x;
+              y = HEIGHT - 1 - y;
+              break;
+          case 3:
+              t = x;
+              x = y;
+              y = HEIGHT - 1 - t;
+
+              break;
+      }
+      return buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
+    }
+  }
+
 /**************************************************************************/
 /*!
    @brief    Fill the framebuffer completely with one color
@@ -594,6 +625,34 @@ void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
       #elif
         display->drawPixel(x0+x, y0+y, this->getPixel565(x,y));
       #endif
+    }
+  }
+}
+void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
+  uint8_t c;
+  int16_t pos;
+  /*
+   * use aspect ration as hint for longest run
+   */
+  if(this->width>=this->height){
+    for (int16_t y=0;y<this->height;y++){
+      for (int16_t x=0;x<this->width;x++){
+        pos=1;
+        c=this->getPixelColorIndex(x,y);
+        while(x+pos<=this->width && this->getPixelColorIndex(x+pos++, y)==c);
+        display->drawFastHLine(x0+x-2,y0+y,pos+1,getColor(c));
+        x+=pos;
+      }
+    }
+  }else{
+    for (int16_t x=0;x<this->width;x++){
+      for (int16_t y=0;y<this->height;y++){
+        pos=1;
+        c=this->getPixelColorIndex(x,y);
+        while(y+pos<=this->height && this->getPixelColorIndex(x, y+pos++)==c);
+        display->drawFastVLine(x0+x,y0+y,pos,getColor(c));
+        y+=pos;
+      }
     }
   }
 }
