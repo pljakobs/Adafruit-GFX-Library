@@ -65,7 +65,11 @@ public:
     setColor(uint8_t index, color24 color),
     draw(int16_t x, int16_t y, Adafruit_GFX *display),
     quickDraw(int16_t x, int16_t y, Adafruit_GFX *display),
-    clearDisplay(void);
+    setTransparent(uint8_t color),
+    setTransparent(uint16_t color),
+    makeHTMLPalette(),
+    clearDisplay(void),
+    useTransparency(bool t);
   color24
     getPixel24(int16_t x, int16_t y),
     getColor(uint8_t index);
@@ -77,8 +81,9 @@ public:
   uint8_t *
     getBuffer(uint8_t bitmap);
 private:
-  uint16_t width, height;
-  uint8_t depth;
+  uint8_t _depth;
+  uint8_t _transparent;
+  bool    _useTransparency;
   std::vector <color24> palette;
   std::vector <GFXcanvas1*> bitplane;
   //color24 palette[];

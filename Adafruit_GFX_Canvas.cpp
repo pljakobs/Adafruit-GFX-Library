@@ -399,10 +399,10 @@ void GFXcanvas16::fillScreen(uint16_t color) {
     }
 }
 
-GFXiCanvas::GFXiCanvas(int16_t _width, int16_t _height, uint8_t _depth):Adafruit_GFX(width, height){
-  width=_width;
-  height=_height;
-  depth=_depth;
+GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
+  _width=w;
+  _height=h;
+  _depth=d;
   /*
    * depth is depth in bits, not number of colors!
    * it has to be larger than 1 and smaller or equal 8,
@@ -432,18 +432,18 @@ GFXiCanvas::GFXiCanvas(int16_t _width, int16_t _height, uint8_t _depth):Adafruit
    *      .
    * palette[F]=color24{r,g,b};
    */
-   Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\n intializing canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",width, height, depth);
-  if(depth <=8 && depth >=1){
-    uint8_t numColors = 1<<depth;
+   Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\n intializing canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",_width, _height, _depth);
+  if(_depth <=8 && _depth >=1){
+    uint8_t numColors = 1<<_depth;
     palette.reserve(numColors);
     //Serial.printf("struct palette: sizeof(palette[0].r)=%i, sizeof(palette[0].g)=%i, sizeof(palette[0].b)=%i\n",sizeof(palette[0].r),sizeof(palette[0].g),sizeof(palette[0].b));
-    bitplane.reserve(depth);
+    bitplane.reserve(_depth);
     //GFXcanvas1 *bitplane = new *GFXcanvas1[depth];
     //palette ) new color24[numColors];
     //GFXcanvas1 *bitplane[depth];
     //color24 palette[numColors];
-    for( uint8_t i=0;i<depth;i++){
-      bitplane.push_back(new GFXcanvas1(width, height)); //Todo needs error handling if one bitplane cannot be allocated
+    for( uint8_t i=0;i<_depth;i++){
+      bitplane.push_back(new GFXcanvas1(_width, _height)); //Todo needs error handling if one bitplane cannot be allocated
       Serial.printf("initialized bitplane[%i] at %p\n",i,bitplane.at(i)->getBuffer());
     }
     Serial.printf("created bitplanes\n=================\n");
@@ -454,7 +454,7 @@ GFXiCanvas::GFXiCanvas(int16_t _width, int16_t _height, uint8_t _depth):Adafruit
     for(uint8_t n=0;n<numColors;n++){
       palette.push_back({.r=0,.g=0,.b=0});
     }
-    switch (depth) {
+    switch (_depth) {
       case 1:
         //palette.at(0)={.r=  0, .g=  0, .b=  0};
         palette.at(0)={ 0,  0,  0};
@@ -538,8 +538,8 @@ GFXiCanvas::GFXiCanvas(int16_t _width, int16_t _height, uint8_t _depth):Adafruit
 }
 
 GFXiCanvas::~GFXiCanvas(){
-  Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\ndeleting canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",width, height, depth);
-  for(uint8_t i=0;i<this->depth;i++){
+  Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\ndeleting canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",_width, _height, _depth);
+  for(uint8_t i=0;i<this->_depth;i++){
     delete this->bitplane.at(i);
   }
   bitplane.clear();
@@ -548,13 +548,14 @@ GFXiCanvas::~GFXiCanvas(){
 }
 
 uint8_t GFXiCanvas::getDepth(){
-  return this->depth;
+  return this->_depth;
 }
 
 void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
-  if(colorIndex<(1<<this->depth)){
+  if(colorIndex<(1<<this->_depth)){
+    //Serial.printf("called drawPixel in canvas with 8Bit color\n");
     //Serial.printf("drawing pixel at x:%i, y:%i\n",x,y);
-    for(uint8_t i=0;i<this->depth;i++) {
+    for(uint8_t i=0;i<this->_depth;i++) {
       //Serial.printf("bitplane:%i, val:%i\n",i,(colorIndex && 1<<i));
       this->bitplane.at(i)->drawPixel(x,y,(colorIndex & (1<<i)));
       }
@@ -568,13 +569,14 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
  * this is further reduced.
  */
 void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
-    uint8_t c=(uint8_t)(colorIndex&0xff);
+  //Serial.printf("called drawPixel in canvas with 16Bit color %i\n",colorIndex);
+  uint8_t c=(uint8_t)(colorIndex&0xff);
   drawPixel(x,y,c);
 }
 
 color24 GFXiCanvas::getColor(uint8_t i){
   //if(i!=0) Serial.printf("index: %i ",i);
-  if(i<(1<<this->depth)){
+  if(i<(1<<this->_depth)){
     color24 c=this->palette.at(i);
     //if(i!=0) Serial.printf("color: r: %i, g: %i, b: %i\n",c.r,c.g,c.b);
     return this->palette.at(i);
@@ -584,7 +586,7 @@ color24 GFXiCanvas::getColor(uint8_t i){
 }
 
 void GFXiCanvas::setColor(uint8_t i, color24 c){
-  if(i<(1<<this->depth)){
+  if(i<(1<<this->_depth)){
     this->palette.at(i)=c;
   }
 }
@@ -592,7 +594,7 @@ void GFXiCanvas::setColor(uint8_t i, color24 c){
 uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
   uint8_t c=0;
   //Serial.printf("getPixelColorIndex x:%i, y:%i [",x,y);
-  for(uint8_t i=0;i<this->depth;i++) {
+  for(uint8_t i=0;i<this->_depth;i++) {
       //Serial.printf("bitplane %i - ",i);
       //uint8_t b=(this->bitplane.at(i)->getPixel(x,y) & 0x01)<<i;
       c=c|(this->bitplane.at(i)->getPixel(x,y) & 0x01)<<i;
@@ -615,9 +617,189 @@ uint16_t GFXiCanvas::getPixel565(int16_t x, int16_t y) {
   return c;
 }
 
+void GFXiCanvas::setTransparent(uint8_t colorIndex){
+  if(colorIndex<(1<<this->_depth)){
+    _transparent=colorIndex;
+  }
+}
+
+void GFXiCanvas::setTransparent(uint16_t colorIndex){
+  if((colorIndex & 0x0f)<(1<<this->_depth)){
+    _transparent=(uint8_t)colorIndex;
+  }
+}
+
+void GFXiCanvas::useTransparency(bool b){
+  _useTransparency=b;
+}
+/*
+ * create a (partial) html standard palette.
+ * depending on the bit depth of the canvas, this
+ * will provide a selection of html colors. Six
+ * bitplanes will allow for all 140 colors defined by
+ * name in htmlcolors.h
+ */
+void GFXiCanvas::makeHTMLPalette(){
+  setColor(html_BLACK,BLACK);
+  setColor(html_WHITE,WHITE);
+  if(this->_depth>1){
+    setColor(html_INDIANRED,INDIANRED);
+    setColor(html_LIGHTCORAL,LIGHTCORAL);
+  }
+  if(this->_depth>2){
+    setColor(html_SALMON,SALMON);
+    setColor(html_DARKSALMON,DARKSALMON);
+    setColor(html_LIGHTSALMON,LIGHTSALMON);
+    setColor(html_CRIMSON,CRIMSON);
+  }
+  if(this->_depth>2){
+    setColor(html_RED,RED);
+    setColor(html_FIREBRICK,FIREBRICK);
+    setColor(html_DARKRED,DARKRED);
+    setColor(html_PINK,PINK);
+    setColor(html_LIGHTPINK,LIGHTPINK);
+    setColor(html_HOTPINK,HOTPINK);
+    setColor(html_DEEPPINK,DEEPPINK);
+    setColor(html_MEDIUMVIOLETRED,MEDIUMVIOLETRED);
+  }
+  if(this->_depth>3){
+    setColor(html_PALEVIOLETRED,PALEVIOLETRED);
+    setColor(html_CORAL,CORAL);
+    setColor(html_TOMATO,TOMATO);
+    setColor(html_ORANGERED,ORANGERED);
+    setColor(html_DARKORANGE,DARKORANGE);
+    setColor(html_ORANGE,ORANGE);
+    setColor(html_GOLD,GOLD);
+    setColor(html_YELLOW,YELLOW);
+    setColor(html_LIGHTYELLOW,LIGHTYELLOW);
+    setColor(html_LEMONCHIFFON,LEMONCHIFFON);
+    setColor(html_LIGHTGOLDENRODYELLOW,LIGHTGOLDENRODYELLOW);
+    setColor(html_PAPAYAWHIP,PAPAYAWHIP);
+    setColor(html_MOCCASIN,MOCCASIN);
+    setColor(html_PEACHPUFF,PEACHPUFF);
+    setColor(html_PALEGOLDENROD,PALEGOLDENROD);
+    setColor(html_KHAKI,KHAKI);
+  }
+  if(this->_depth>4){
+    setColor(html_DARKKHAKI,DARKKHAKI);
+    setColor(html_LAVENDER,LAVENDER);
+    setColor(html_THISTLE,THISTLE);
+    setColor(html_PLUM,PLUM);
+    setColor(html_VIOLET,VIOLET);
+    setColor(html_ORCHID,ORCHID);
+    setColor(html_FUCHSIA,FUCHSIA);
+    setColor(html_MAGENTA,MAGENTA);
+    setColor(html_MEDIUMORCHID,MEDIUMORCHID);
+    setColor(html_MEDIUMPURPLE,MEDIUMPURPLE);
+    setColor(html_REBECCAPURPLE,REBECCAPURPLE);
+    setColor(html_BLUEVIOLET,BLUEVIOLET);
+    setColor(html_DARKVIOLET,DARKVIOLET);
+    setColor(html_DARKORCHID,DARKORCHID);
+    setColor(html_DARKMAGENTA,DARKMAGENTA);
+    setColor(html_PURPLE,PURPLE);
+    setColor(html_INDIGO,INDIGO);
+    setColor(html_SLATEBLUE,SLATEBLUE);
+    setColor(html_DARKSLATEBLUE,DARKSLATEBLUE);
+    setColor(html_MEDIUMSLATEBLUE,MEDIUMSLATEBLUE);
+    setColor(html_GREENYELLOW,GREENYELLOW);
+    setColor(html_CHARTREUSE,CHARTREUSE);
+    setColor(html_LAWNGREEN,LAWNGREEN);
+    setColor(html_LIME,LIME);
+    setColor(html_LIMEGREEN,LIMEGREEN);
+    setColor(html_PALEGREEN,PALEGREEN);
+    setColor(html_LIGHTGREEN,LIGHTGREEN);
+    setColor(html_MEDIUMSPRINGGREEN,MEDIUMSPRINGGREEN);
+    setColor(html_SPRINGGREEN,SPRINGGREEN);
+    setColor(html_MEDIUMSEAGREEN,MEDIUMSEAGREEN);
+    setColor(html_SEAGREEN,SEAGREEN);
+    setColor(html_FORESTGREEN,FORESTGREEN);
+  }
+  if(this->_depth>5){
+    setColor(html_GREEN,GREEN);
+    setColor(html_DARKGREEN,DARKGREEN);
+    setColor(html_YELLOWGREEN,YELLOWGREEN);
+    setColor(html_OLIVEDRAB,OLIVEDRAB);
+    setColor(html_OLIVE,OLIVE);
+    setColor(html_DARKOLIVEGREEN,DARKOLIVEGREEN);
+    setColor(html_MEDIUMAQUAMARINE,MEDIUMAQUAMARINE);
+    setColor(html_DARKSEAGREEN,DARKSEAGREEN);
+    setColor(html_LIGHTSEAGREEN,LIGHTSEAGREEN);
+    setColor(html_DARKCYAN,DARKCYAN);
+    setColor(html_TEAL,TEAL);
+    setColor(html_AQUA,AQUA);
+    setColor(html_CYAN,CYAN);
+    setColor(html_LIGHTCYAN,LIGHTCYAN);
+    setColor(html_PALETURQUOISE,PALETURQUOISE);
+    setColor(html_AQUAMARINE,AQUAMARINE);
+    setColor(html_TURQUOISE,TURQUOISE);
+    setColor(html_MEDIUMTURQUOISE,MEDIUMTURQUOISE);
+    setColor(html_DARKTURQUOISE,DARKTURQUOISE);
+    setColor(html_CADETBLUE,CADETBLUE);
+    setColor(html_STEELBLUE,STEELBLUE);
+    setColor(html_LIGHTSTEELBLUE,LIGHTSTEELBLUE);
+    setColor(html_POWDERBLUE,POWDERBLUE);
+    setColor(html_LIGHTBLUE,LIGHTBLUE);
+    setColor(html_SKYBLUE,SKYBLUE);
+    setColor(html_LIGHTSKYBLUE,LIGHTSKYBLUE);
+    setColor(html_DEEPSKYBLUE,DEEPSKYBLUE);
+    setColor(html_DODGERBLUE,DODGERBLUE);
+    setColor(html_CORNFLOWERBLUE,CORNFLOWERBLUE);
+    setColor(html_ROYALBLUE,ROYALBLUE);
+    setColor(html_BLUE,BLUE);
+    setColor(html_MEDIUMBLUE,MEDIUMBLUE);
+    setColor(html_DARKBLUE,DARKBLUE);
+    setColor(html_NAVY,NAVY);
+    setColor(html_MIDNIGHTBLUE,MIDNIGHTBLUE);
+    setColor(html_CORNSILK,CORNSILK);
+    setColor(html_BLANCHEDALMOND,BLANCHEDALMOND);
+    setColor(html_BISQUE,BISQUE);
+    setColor(html_NAVAJOWHITE,NAVAJOWHITE);
+    setColor(html_WHEAT,WHEAT);
+    setColor(html_BURLYWOOD,BURLYWOOD);
+    setColor(html_TAN,TAN);
+    setColor(html_ROSYBROWN,ROSYBROWN);
+    setColor(html_SANDYBROWN,SANDYBROWN);
+    setColor(html_GOLDENROD,GOLDENROD);
+    setColor(html_DARKGOLDENROD,DARKGOLDENROD);
+    setColor(html_PERU,PERU);
+    setColor(html_CHOCOLATE,CHOCOLATE);
+    setColor(html_SADDLEBROWN,SADDLEBROWN);
+    setColor(html_SIENNA,SIENNA);
+    setColor(html_BROWN,BROWN);
+    setColor(html_MAROON,MAROON);
+    setColor(html_SNOW,SNOW);
+    setColor(html_HONEYDEW,HONEYDEW);
+    setColor(html_MINTCREAM,MINTCREAM);
+    setColor(html_AZURE,AZURE);
+    setColor(html_ALICEBLUE,ALICEBLUE);
+    setColor(html_GHOSTWHITE,GHOSTWHITE);
+    setColor(html_WHITESMOKE,WHITESMOKE);
+    setColor(html_SEASHELL,SEASHELL);
+    setColor(html_BEIGE,BEIGE);
+    setColor(html_OLDLACE,OLDLACE);
+    setColor(html_FLORALWHITE,FLORALWHITE);
+    setColor(html_IVORY,IVORY);
+  }
+  if(this->_depth>6){
+    setColor(html_ANTIQUEWHITE,ANTIQUEWHITE);
+    setColor(html_LINEN,LINEN);
+    setColor(html_LAVENDERBLUSH,LAVENDERBLUSH);
+    setColor(html_MISTYROSE,MISTYROSE);
+    setColor(html_GAINSBORO,GAINSBORO);
+    setColor(html_LIGHTGRAY,LIGHTGRAY);
+    setColor(html_SILVER,SILVER);
+    setColor(html_DARKGRAY,DARKGRAY);
+    setColor(html_GRAY,GRAY);
+    setColor(html_DIMGRAY,DIMGRAY);
+    setColor(html_LIGHTSLATEGRAY,LIGHTSLATEGRAY);
+    setColor(html_SLATEGRAY,SLATEGRAY);
+    setColor(html_DARKSLATEGRAY,DARKSLATEGRAY);
+  }
+}
+
 void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
-  for (int16_t y=0;y<this->height;y++){
-    for (int16_t x=0;x<this->width;x++){
+  for (int16_t y=0;y<this->_height;y++){
+    for (int16_t x=0;x<this->_width;x++){
       #ifdef GFX_ENABLE_24Bit
         //color24 pc=this->getPixel24(x,y);
         display->drawPixel(x0+x, y0+y, this->getPixel24(x,y));
@@ -628,44 +810,57 @@ void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
     }
   }
 }
+
 void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
   uint8_t c;
   int16_t pos;
   /*
+   * if useTransparency is set, color index transparent is ignored (as set
+   * by setTransparent()). If it's not set, the drawing area is filled with
+   * that color index first, hopefully speedign up the on-screen Drawing
+   */
+  if(!_useTransparency){
+    display->fillRect(x0,y0,x0+this->_width, y0+this->_height, _transparent);
+  }
+  /*
    * use aspect ration as hint for longest run
    */
-  if(this->width>=this->height){
-    for (int16_t y=0;y<this->height;y++){
-      for (int16_t x=0;x<this->width;x++){
+  if(this->_width>=this->_height){
+    for (int16_t y=0;y<this->_height;y++){
+      for (int16_t x=0;x<this->_width;x++){ //ToDo - not sure if this works well for padded canvas objects (ie such that don't end on an even byte border)
         pos=1;
         c=this->getPixelColorIndex(x,y);
-        while(x+pos<=this->width && this->getPixelColorIndex(x+pos++, y)==c);
-        display->drawFastHLine(x0+x-2,y0+y,pos+1,getColor(c));
-        x+=pos;
+        if(c!=_transparent){
+          while(x+pos<=this->_width && this->getPixelColorIndex(x+pos++, y)==c);
+          display->drawFastHLine(x0+x,y0+y,pos-1,getColor(c));
+          x+=pos;
+        }
       }
     }
   }else{
-    for (int16_t x=0;x<this->width;x++){
-      for (int16_t y=0;y<this->height;y++){
+    for (int16_t x=0;x<this->_width;x++){
+      for (int16_t y=0;y<this->_height;y++){
         pos=1;
         c=this->getPixelColorIndex(x,y);
-        while(y+pos<=this->height && this->getPixelColorIndex(x, y+pos++)==c);
-        display->drawFastVLine(x0+x,y0+y,pos,getColor(c));
-        y+=pos;
+        if(c!=_transparent){
+          while(y+pos<=this->_height && this->getPixelColorIndex(x, y+pos++)==c);
+          display->drawFastVLine(x0+x,y0+y,pos,getColor(c));
+          y+=pos;
+        }
       }
     }
   }
 }
 
 uint8_t *GFXiCanvas::getBuffer(uint8_t plane){
-  if(plane>=0 && plane<this->depth){
+  if(plane>=0 && plane<this->_depth){
     return this->bitplane.at(plane)->getBuffer();
   }
   return false;
 }
 
 void GFXiCanvas::clearDisplay(){
-  for(uint8_t i=0;i<this->depth;i++){
+  for(uint8_t i=0;i<this->_depth;i++){
     this->bitplane.at(i)->clearDisplay();
   }
 }

@@ -198,11 +198,13 @@ void Adafruit_GFX::startWrite(){
 */
 /**************************************************************************/
 void Adafruit_GFX::writePixel(int16_t x, int16_t y, uint16_t color){
+    //Serial.printf("called writePixel in baseclass with 16Bit color\n");
     drawPixel(x, y, color);
 }
 
 //#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writePixel(int16_t x, int16_t y, color24 color){
+    //Serial.printf("called writePixel in baseclass with 24Bit color\n");
     writePixel(x,y,color);
 }
 //#endif
@@ -212,6 +214,7 @@ void Adafruit_GFX::writePixel(int16_t x, int16_t y, color24 color){
  * implementing a true 24Bit interface
  */
 void Adafruit_GFX::drawPixel(int16_t x, int16_t y, color24 color){
+    //Serial.printf("called drawPixel in baseclass with 24Bit color\n");
     drawPixel(x,y,color565(color));
 }
 
@@ -1388,7 +1391,7 @@ void Adafruit_GFX::drawRGBBitmap(int16_t x, int16_t y,
 /**************************************************************************/
 void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
   uint16_t color, uint16_t bg, uint8_t size) {
-
+    Serial.printf("called drawChar in baseclass\n");
     if(!gfxFont) { // 'Classic' built-in font
 
         if((x >= _width)            || // Clip right
