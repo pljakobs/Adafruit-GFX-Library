@@ -820,7 +820,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
    * that color index first, hopefully speedign up the on-screen Drawing
    */
   if(!_useTransparency){
-    display->fillRect(x0,y0,x0+this->_width, y0+this->_height, _transparent);
+    display->fillRect(x0,y0,this->_width, this->_height, _transparent);
   }
   /*
    * use aspect ration as hint for longest run
