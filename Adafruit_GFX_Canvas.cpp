@@ -825,7 +825,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
   /*
    * use aspect ration as hint for longest run
    */
-  if(this->_width>=this->_height){
+  if(this->_width>=this->_height && !_textHint){
     for (int16_t y=0;y<this->_height;y++){
       for (int16_t x=0;x<this->_width;x++){ //ToDo - not sure if this works well for padded canvas objects (ie such that don't end on an even byte border)
         pos=1;
@@ -863,4 +863,8 @@ void GFXiCanvas::clearDisplay(){
   for(uint8_t i=0;i<this->_depth;i++){
     this->bitplane.at(i)->clearDisplay();
   }
+}
+
+void GFXiCanvas::setTextHint(bool h){
+  _textHint=h;
 }

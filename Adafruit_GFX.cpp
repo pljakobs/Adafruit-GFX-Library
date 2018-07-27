@@ -1391,7 +1391,6 @@ void Adafruit_GFX::drawRGBBitmap(int16_t x, int16_t y,
 /**************************************************************************/
 void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
   uint16_t color, uint16_t bg, uint8_t size) {
-    Serial.printf("called drawChar in baseclass\n");
     if(!gfxFont) { // 'Classic' built-in font
 
         if((x >= _width)            || // Clip right

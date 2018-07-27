@@ -69,6 +69,7 @@ public:
     setTransparent(uint16_t color),
     makeHTMLPalette(),
     clearDisplay(void),
+    setTextHint(bool h),
     useTransparency(bool t);
   color24
     getPixel24(int16_t x, int16_t y),
@@ -83,7 +84,7 @@ public:
 private:
   uint8_t _depth;
   uint8_t _transparent;
-  bool    _useTransparency;
+  bool    _useTransparency,_textHint;
   std::vector <color24> palette;
   std::vector <GFXcanvas1*> bitplane;
   //color24 palette[];
