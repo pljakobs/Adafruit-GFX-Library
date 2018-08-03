@@ -70,6 +70,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
 #endif
 
+//#define CALLTRACE 1
+
 /**************************************************************************/
 /*!
    @brief    Instatiate a GFX context for graphics! Can only be done by a superclass
@@ -103,6 +105,9 @@ WIDTH(w), HEIGHT(h)
 /**************************************************************************/
 void Adafruit_GFX::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
         uint16_t color) {
+    #ifdef CALLTRACE
+    Serial.printf("called writeLine in baseclass with color565\n");
+    #endif
     int16_t steep = abs(y1 - y0) > abs(x1 - x0);
     if (steep) {
         _swap_int16_t(x0, y0);
@@ -143,6 +148,9 @@ void Adafruit_GFX::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
 //#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
         color24 color) {
+    #ifdef CALLTRACE
+    Serial.printf("called writeLine in baseclass with color24");
+    #endif
     int16_t steep = abs(y1 - y0) > abs(x1 - x0);
     if (steep) {
         _swap_int16_t(x0, y0);
@@ -198,13 +206,17 @@ void Adafruit_GFX::startWrite(){
 */
 /**************************************************************************/
 void Adafruit_GFX::writePixel(int16_t x, int16_t y, uint16_t color){
-    //Serial.printf("called writePixel in baseclass with 16Bit color\n");
+    #ifdef CALLTRACE2
+    Serial.printf("called writePixel in baseclass with 16Bit color\n");
+    #endif
     drawPixel(x, y, color);
 }
 
 //#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writePixel(int16_t x, int16_t y, color24 color){
-    //Serial.printf("called writePixel in baseclass with 24Bit color\n");
+    #ifdef CALLTRACE2
+    Serial.printf("called writePixel in baseclass with 24Bit color\n");
+    #endif
     writePixel(x,y,color);
 }
 //#endif
@@ -214,7 +226,9 @@ void Adafruit_GFX::writePixel(int16_t x, int16_t y, color24 color){
  * implementing a true 24Bit interface
  */
 void Adafruit_GFX::drawPixel(int16_t x, int16_t y, color24 color){
-    //Serial.printf("called drawPixel in baseclass with 24Bit color\n");
+    #ifdef CALLTRACE2
+    Serial.printf("called drawPixel in baseclass with 24Bit color\n");
+    #endif
     drawPixel(x,y,color565(color));
 }
 
@@ -258,6 +272,10 @@ void Adafruit_GFX::writeFastHLine(int16_t x, int16_t y,
     // Overwrite in subclasses if startWrite is defined!
     // Example: writeLine(x, y, x+w-1, y, color);
     // or writeFillRect(x, y, w, 1, color);
+    #ifdef CALLTRACE
+    Serial.printf("Baseclass writeFastHLine color565 x: %i, y: %i, l: %i\n",x,y,w);
+    #endif
+
     drawFastHLine(x, y, w, color);
 }
 
@@ -267,6 +285,9 @@ void Adafruit_GFX::writeFastHLine(int16_t x, int16_t y,
     // Overwrite in subclasses if startWrite is defined!
     // Example: writeLine(x, y, x+w-1, y, color);
     // or writeFillRect(x, y, w, 1, color);
+    #ifdef CALLTRACE
+    Serial.printf("Baseclass writeFastHLine color24\n");
+    #endif
     writeFastHLine(x, y, w, color565(color));
 }
 //#endif
@@ -282,7 +303,9 @@ void Adafruit_GFX::writeFastHLine(int16_t x, int16_t y,
 /**************************************************************************/
 void Adafruit_GFX::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
         uint16_t color) {
-          Serial.printf("called writeFilledRect in Baseclass with color565\n");
+        #ifdef CALLTRACE
+        Serial.printf("called writeFilledRect in Baseclass with color565\n");
+        #endif
     // Overwrite in subclasses if desired!
     fillRect(x,y,w,h,color);
 }
@@ -290,7 +313,9 @@ void Adafruit_GFX::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
 //#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
         color24 color) {
-        Serial.printf("called writeFilledRect in Baseclass with color24\n");
+    #ifdef CALLTRACE
+    Serial.printf("called writeFilledRect in Baseclass with color24\n");
+    #endif
     // Overwrite in subclasses if desired!
     fillRect(x,y,w,h,color);
 }
@@ -314,6 +339,9 @@ void Adafruit_GFX::endWrite(){
 /**************************************************************************/
 void Adafruit_GFX::drawFastVLine(int16_t x, int16_t y,
         int16_t h, uint16_t color) {
+    #ifdef CALLTRACE
+    Serial.printf("called drawFastVLine in Baseclass with color565\n");
+    #endif
     startWrite();
     writeLine(x, y, x, y+h-1, color);
     endWrite();
@@ -321,6 +349,9 @@ void Adafruit_GFX::drawFastVLine(int16_t x, int16_t y,
 //#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawFastVLine(int16_t x, int16_t y,
         int16_t h, color24 color) {
+    #ifdef CALLTRACE
+    Serial.printf("called drawFastVLine in Baseclass with color24\n");
+    #endif
     startWrite();
     writeLine(x, y, x, y+h-1, color565(color));
     endWrite();
@@ -337,6 +368,10 @@ void Adafruit_GFX::drawFastVLine(int16_t x, int16_t y,
 /**************************************************************************/
 void Adafruit_GFX::drawFastHLine(int16_t x, int16_t y,
         int16_t w, uint16_t color) {
+    #ifdef CALLTRACE
+    Serial.printf("Baseclass drawFastHLine color565 x: %i, y: %i, l: %i\n",x,y,w);
+    #endif
+
     startWrite();
     writeLine(x, y, x+w-1, y, color);
     endWrite();
@@ -345,6 +380,10 @@ void Adafruit_GFX::drawFastHLine(int16_t x, int16_t y,
 //#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawFastHLine(int16_t x, int16_t y,
         int16_t w, color24 color) {
+    #ifdef CALLTRACE
+    Serial.printf("Baseclass writeFastHLine color24\n");
+    #endif
+
     startWrite();
     writeLine(x, y, x+w-1, y, color565(color));
     endWrite();
@@ -851,7 +890,9 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
         int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color) {
 
     int16_t a, b, y, last;
-
+    #ifdef CALLTRACE
+    Serial.printf("Baseclass fillTriangle color565\nx0: %i, y0: %i, x1: %i, y1: %i, x2: %i, y2: %i\n",x0,y0,x1,y1,x2,y2);
+    #endif
     // Sort coordinates by Y order (y2 >= y1 >= y0)
     if (y0 > y1) {
         _swap_int16_t(y0, y1); _swap_int16_t(x0, x1);
@@ -870,6 +911,9 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
         else if(x1 > b) b = x1;
         if(x2 < a)      a = x2;
         else if(x2 > b) b = x2;
+        #ifdef CALLTRACE
+        Serial.printf("baseclass (1) calling writeFastHLine(x: %i, y: %i, l: %i, c: %i);\n",a, y0, b-a+1, color);
+        #endif
         writeFastHLine(a, y0, b-a+1, color);
         endWrite();
         return;
@@ -882,6 +926,9 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
     dy02 = y2 - y0,
     dx12 = x2 - x1,
     dy12 = y2 - y1;
+    #ifdef CALLTRACE
+    Serial.printf("baseclass fillTriangle \ndx01: %i, dy01: %i\ndx02: %i, dy02: %i\ndx12: %i, dy12: %i\n",dx01,dy01,dx02,dy02,dx12,dy12);
+    #endif
     int32_t
     sa   = 0,
     sb   = 0;
@@ -900,11 +947,17 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
         b   = x0 + sb / dy02;
         sa += dx01;
         sb += dx02;
+        #ifdef CALLTRACE
+        Serial.printf("baseclass (2) a: %i, b: %i, sa: %i, sb: %i);\n",a, b, sa, sb);
+        #endif
         /* longhand:
         a = x0 + (x1 - x0) * (y - y0) / (y1 - y0);
         b = x0 + (x2 - x0) * (y - y0) / (y2 - y0);
         */
         if(a > b) _swap_int16_t(a,b);
+        #ifdef CALLTRACE
+        Serial.printf("baseclass (2) calling writeFastHLine(x: %i, y: %i, l: %i, c: %i);\n",a, y, b-a+1, color);
+        #endif
         writeFastHLine(a, y, b-a+1, color);
     }
 
@@ -922,6 +975,9 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
         b = x0 + (x2 - x0) * (y - y0) / (y2 - y0);
         */
         if(a > b) _swap_int16_t(a,b);
+        #ifdef CALLTRACE
+        Serial.printf("baseclass (3) calling writeFastHLine(x: %i, y: %i, l: %i, c: %i);\n",a, y, b-a+1, color);
+        #endif
         writeFastHLine(a, y, b-a+1, color);
     }
     endWrite();
@@ -931,6 +987,9 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
         int16_t x1, int16_t y1, int16_t x2, int16_t y2, color24 color) {
 
     int16_t a, b, y, last;
+    #ifdef CALLTRACE
+    Serial.printf("Baseclass fillTriangle color24\n");
+    #endif
 
     // Sort coordinates by Y order (y2 >= y1 >= y0)
     if (y0 > y1) {

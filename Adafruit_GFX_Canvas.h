@@ -12,6 +12,7 @@
 #endif
 #include <vector>
 
+
 /// A GFX 1-bit canvas context for graphics
 class GFXcanvas1 : public Adafruit_GFX {
  public:
@@ -60,17 +61,28 @@ public:
   GFXiCanvas(int16_t width, int16_t height, uint8_t depth);
   ~GFXiCanvas(void);
   void
+    // basic indexed drawing interface using uint8_t and
+    // uint16_t color parameters for compatibility within
+    // basic drawing routines
     drawPixel(int16_t x, int16_t y, uint16_t colorIndex),
     drawPixel(int16_t x, int16_t y, uint8_t colorIndex),
+
+    //drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color),
+    //drawFastHLine(int16_t x, int16_t y, int16_t w, uint8_t color),
+
+    //drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color),
+    //drawFastVLine(int16_t x, int16_t y, int16_t h, uint8_t color),
+
     setColor(uint8_t index, color24 color),
     draw(int16_t x, int16_t y, Adafruit_GFX *display),
     quickDraw(int16_t x, int16_t y, Adafruit_GFX *display),
-    setTransparent(uint8_t color),
-    setTransparent(uint16_t color),
-    makeHTMLPalette(),
     clearDisplay(void),
-    setTextHint(bool h),
-    useTransparency(bool t);
+    setTransparent(uint8_t color,bool t),
+    setTransparent(uint16_t color,bool t),
+    setTransparent(bool t),
+    makeHTMLPalette(),
+    setTextHint(bool h);
+
   color24
     getPixel24(int16_t x, int16_t y),
     getColor(uint8_t index);

@@ -7,6 +7,7 @@
 #elif defined(ESP8266) || defined(ESP32)
   #include <pgmspace.h>
 #endif
+#define CALLTRACE 1
 // -------------------------------------------------------------------------
 
 // GFXcanvas1, GFXcanvas8 and GFXcanvas16 (currently a WIP, don't get too
@@ -399,38 +400,52 @@ void GFXcanvas16::fillScreen(uint16_t color) {
     }
 }
 
+/**************************************************************************/
+/*!
+   @brief    Instatiate a GFX bitmapped canvas for drawing
+   @param    w   canvas width, in pixels
+   @param    h   canvas height, in pixels
+   @param    d   number of bitplanes
+*/
+/**************************************************************************/
+
 GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
   _width=w;
   _height=h;
   _depth=d;
-  /*
-   * depth is depth in bits, not number of colors!
-   * it has to be larger than 1 and smaller or equal 8,
-   * single bit bitplanes should use GFXcanvas1, 8bpp can
-   * alternatively use GFXCanvas8, although I'm not quite
-   * sure how that handles colors (assigns 16 Bit color to
-   * 8Bit memory cell?)
-   *
-   * Any iCanvas object will have a palette assigned to it that
-   * is used to map color numbers derived from the bitplanes to
-   * the actual 16 or 24 bit (565 or 888) color value
-   *
-   * the layout in memory will be like this for an iCanvas of depth 4
-   *
-   * bitplane[0] *GFXCanvas1 <Bit 0: 1 0 1 1 0 0 0 1>
-   * bitplane[1] *GFXCanvas1 <Bit 1: 0 0 0 1 0 1 1 1>
-   * bitplane[2] *GFXCanvas1 <Bit 2: 0 1 0 0 0 0 0 1>
-   * bitplane[3] *GFXCanvas1 <Bit 3: 1 1 0 0 1 0 0 0>
-   *                                 ---------------
-   *                resulting color: 5 C 1 3 8 2 2 7
-   *
-   * palette[0]=color24{r,g,b};
-   * palette[1]=color24{r,g,b};
-   * palette[2]=color24{r,g,b};
-   *      .
-   *      .
-   *      .
-   * palette[F]=color24{r,g,b};
+  /*!
+    @remark
+        depth is depth in bits, not number of colors!
+        it has to be larger than 1 and smaller or equal 8,
+        single bit bitplanes should use GFXcanvas1, 8bpp can
+        alternatively use GFXCanvas8, although I'm not quite
+        sure how that handles colors (assigns 16 Bit color to
+          8Bit memory cell?)
+
+    @remark
+        Any iCanvas object will have a palette assigned to it that
+        is used to map color numbers derived from the bitplanes to
+        the actual 16 or 24 bit (565 or 888) color value
+        the layout in memory will be like this for an iCanvas of depth 4
+
+
+        ``````
+        bitplane[0] *GFXCanvas1 <Bit 0: 1 0 1 1 0 0 0 1>
+        bitplane[1] *GFXCanvas1 <Bit 1: 0 0 0 1 0 1 1 1>
+        bitplane[2] *GFXCanvas1 <Bit 2: 0 1 0 0 0 0 0 1>
+        bitplane[3] *GFXCanvas1 <Bit 3: 1 1 0 0 1 0 0 0>
+                                      ---------------
+                       resulting color: 5 C 1 3 8 2 2 7
+
+        palette[0]=color24{r,g,b};
+        palette[1]=color24{r,g,b};
+        palette[2]=color24{r,g,b};
+          .
+          .
+          .
+        palette[F]=color24{r,g,b};
+        ``````
+
    */
    Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\n intializing canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",_width, _height, _depth);
   if(_depth <=8 && _depth >=1){
@@ -438,10 +453,6 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
     palette.reserve(numColors);
     //Serial.printf("struct palette: sizeof(palette[0].r)=%i, sizeof(palette[0].g)=%i, sizeof(palette[0].b)=%i\n",sizeof(palette[0].r),sizeof(palette[0].g),sizeof(palette[0].b));
     bitplane.reserve(_depth);
-    //GFXcanvas1 *bitplane = new *GFXcanvas1[depth];
-    //palette ) new color24[numColors];
-    //GFXcanvas1 *bitplane[depth];
-    //color24 palette[numColors];
     for( uint8_t i=0;i<_depth;i++){
       bitplane.push_back(new GFXcanvas1(_width, _height)); //Todo needs error handling if one bitplane cannot be allocated
       Serial.printf("initialized bitplane[%i] at %p\n",i,bitplane.at(i)->getBuffer());
@@ -454,11 +465,15 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
     for(uint8_t n=0;n<numColors;n++){
       palette.push_back({.r=0,.g=0,.b=0});
     }
+    /*!
+     * the constructor creates a base palette so the canvas is usable right away
+     * overwrite using setColor() as needed.
+     */
     switch (_depth) {
       case 1:
         //palette.at(0)={.r=  0, .g=  0, .b=  0};
         palette.at(0)={ 0,  0,  0};
-        palette.at(1)={255,255,255}; //ssd1306 LCDs need uint16_t 1 to draw pixsel
+        palette.at(1)={255,255,255}; //ssd1306 OLEDs need uint16_t 1 to draw pixel
         break;
       case 2:
         palette.at(0)={.r=  0, .g=  0, .b=  0};
@@ -477,7 +492,6 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
         palette.at( 7)={.r=  0, .g=255, .b=255};
         break;
       case 4:
-
         palette.at( 0)= {.r= 20, .g= 12, .b= 28};
         palette.at( 1)= {.r= 68, .g= 36, .b= 52};
         palette.at( 2)= {.r= 48, .g= 52, .b=109};
@@ -536,24 +550,46 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
   }
   Serial.printf("GFXiCanvas consturctur finished\ncreated %i bitplanes and %i palette positions\n\n>>>>>>>>>>>>>>>>>>>>>\n",bitplane.capacity(), palette.capacity());
 }
+/**************************************************************************/
+/*!
+   @brief    free up memory used by iCanvas object
+ */
+/**************************************************************************/
 
 GFXiCanvas::~GFXiCanvas(){
-  Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\ndeleting canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",_width, _height, _depth);
+  //Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\ndeleting canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",_width, _height, _depth);
   for(uint8_t i=0;i<this->_depth;i++){
     delete this->bitplane.at(i);
   }
   bitplane.clear();
   palette.clear();
-  Serial.printf("\n exit destructor\n\n>>>>>>>>>>>>>>>>>>>>>\n");
+  //Serial.printf("\n exit destructor\n\n>>>>>>>>>>>>>>>>>>>>>\n");
 }
+/**************************************************************************/
+/*!
+   @brief    return the depth of an iCanvas context
+   @returns  depth
+*/
+/**************************************************************************/
 
 uint8_t GFXiCanvas::getDepth(){
   return this->_depth;
 }
-
+/**************************************************************************/
+/*!
+   @brief    draws a pixel on an iCanvas
+   @param    x   pixel x position
+   @param    x   pixel Y position
+   @PARAM    colorIndex indexed color as defined in the palette. an
+             index greater than 2^bitplanes is silently discareded
+             and the corresponding pixel remains unchanged on the canvas
+*/
+/***************************************************************************/
 void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
   if(colorIndex<(1<<this->_depth)){
-    //Serial.printf("called drawPixel in canvas with 8Bit color\n");
+    #ifdef CALLTRACE
+    Serial.printf("called drawPixel in canvas with 8Bit color\n");
+    #endif
     //Serial.printf("drawing pixel at x:%i, y:%i\n",x,y);
     for(uint8_t i=0;i<this->_depth;i++) {
       //Serial.printf("bitplane:%i, val:%i\n",i,(colorIndex && 1<<i));
@@ -561,19 +597,36 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
       }
   }
 }
-
-/*
+/**************************************************************************/
+/*!
+   @brief    draws a pixel on an iCanvas
+   @param    x   pixel x position
+   @param    x   pixel Y position
+   @PARAM    colorIndex indexed color as defined in the palette. an
+             index greater than 2^bitplanes is silently discareded
+             and the corresponding pixel remains unchanged on the canvas
+ *
  * this is for compatibility with other libraries that don't know about
  * indexed colors. Basically, it will just use the lower 8 bits of the
  * color value as the index. Depending on the actual number of bitplanes,
  * this is further reduced.
  */
+ /***************************************************************************/
+
 void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
-  //Serial.printf("called drawPixel in canvas with 16Bit color %i\n",colorIndex);
+  #ifdef CALLTRACE
+  Serial.printf("called drawPixel in canvas with 16Bit color %i\n",colorIndex);
+  #endif
   uint8_t c=(uint8_t)(colorIndex&0xff);
   drawPixel(x,y,c);
 }
-
+/**************************************************************************/
+/*!
+   @brief    return the rgb tupel assigned to the given palette position
+   @param    i  palette position
+   @returns  color24 c
+*/
+/***************************************************************************/
 color24 GFXiCanvas::getColor(uint8_t i){
   //if(i!=0) Serial.printf("index: %i ",i);
   if(i<(1<<this->_depth)){
@@ -584,13 +637,26 @@ color24 GFXiCanvas::getColor(uint8_t i){
     return (color24){0,0,0};
   }
 }
-
+/**************************************************************************/
+/*!
+   @brief    set color for palette position
+   @param    i  palette position
+   @param    c  color24 struct defining the r, g and b components
+*/
+/***************************************************************************/
 void GFXiCanvas::setColor(uint8_t i, color24 c){
   if(i<(1<<this->_depth)){
     this->palette.at(i)=c;
   }
 }
-
+/**************************************************************************/
+/*!
+   @brief    get color index for a pixel on canvas
+   @param    x   pixel x position
+   @param    x   pixel Y position
+   @returns  c   color palette position for the given pixel
+*/
+/***************************************************************************/
 uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
   uint8_t c=0;
   //Serial.printf("getPixelColorIndex x:%i, y:%i [",x,y);
@@ -603,11 +669,27 @@ uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
     //Serial.printf("x: %i, y: %i, c: %i\n",x,y,c);
     return c;
 }
-
+/**************************************************************************/
+/*!
+   @brief    get color24 tupel for a pixel on canvas by resolving
+             the palette location
+   @param    x   pixel x position
+   @param    x   pixel Y position
+   @returns  c   color24 tupel for the given pixel
+*/
+/***************************************************************************/
 color24 GFXiCanvas::getPixel24(int16_t x, int16_t y) {
   return getColor(getPixelColorIndex(x,y));
 }
-
+/**************************************************************************/
+/*!
+   @brief    get color565 value for a pixel on canvas by resolving
+             the palette location
+   @param    x   pixel x position
+   @param    x   pixel Y position
+   @returns  c   uint16_t color565 value for the given pixel
+*/
+/***************************************************************************/
 uint16_t GFXiCanvas::getPixel565(int16_t x, int16_t y) {
   color24 color;
   color = getPixel24(x,y);
@@ -616,21 +698,49 @@ uint16_t GFXiCanvas::getPixel565(int16_t x, int16_t y) {
   c=(color.r & 0xF8) << 8 | (color.g & 0xFC) << 3 | (color.b & 0xF8) >> 3;
   return c;
 }
-
-void GFXiCanvas::setTransparent(uint8_t colorIndex){
+/**************************************************************************/
+/*!
+   @brief    set the palette value that should be used as transparent
+   @param    colorIndex the palette position to be considered _transparent
+   @param    t   whether or not to actually use it as _transparent
+   @remark   if b=false, the given palette color will be painted as set
+             otherwhise, it will not be painted, leaving the pixel on
+             screen unchanged
+*/
+/***************************************************************************/
+void GFXiCanvas::setTransparent(uint8_t colorIndex, bool t){
   if(colorIndex<(1<<this->_depth)){
     _transparent=colorIndex;
   }
+  _useTransparency=t;
 }
-
-void GFXiCanvas::setTransparent(uint16_t colorIndex){
+/**************************************************************************/
+/*!
+   @brief    set the palette value that should be used as transparent
+   @param    colorIndex the palette position to be considered _transparent
+   @param    t   whether or not to actually use it as _transparent
+   @remark   if b=false, the given palette color will be painted as set
+             otherwhise, it will not be painted, leaving the pixel on
+             screen unchanged
+*/
+/***************************************************************************/
+void GFXiCanvas::setTransparent(uint16_t colorIndex, bool t){
   if((colorIndex & 0x0f)<(1<<this->_depth)){
     _transparent=(uint8_t)colorIndex;
   }
+  _useTransparency=t;
 }
-
-void GFXiCanvas::useTransparency(bool b){
-  _useTransparency=b;
+/**************************************************************************/
+/*!
+   @brief    set transparency status0
+   @param    b   whether or not to actually use it as _transparent
+   @remark   if b=false, the given palette color will be painted as set
+             otherwhise, it will not be painted, leaving the pixel on
+             screen unchanged
+*/
+/***************************************************************************/
+void GFXiCanvas::setTransparent(bool t){
+  _useTransparency=t;
 }
 /*
  * create a (partial) html standard palette.
@@ -814,6 +924,7 @@ void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
 void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
   uint8_t c;
   int16_t pos;
+  Serial.printf("entering quickDraw\n");
   /*
    * if useTransparency is set, color index transparent is ignored (as set
    * by setTransparent()). If it's not set, the drawing area is filled with
@@ -821,30 +932,35 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
    */
   if(!_useTransparency){
     display->fillRect(x0,y0,this->_width, this->_height, _transparent);
+    Serial.printf("cleared screen area \n");
   }
   /*
    * use aspect ration as hint for longest run
    */
   if(this->_width>=this->_height && !_textHint){
-    for (int16_t y=0;y<this->_height;y++){
-      for (int16_t x=0;x<this->_width;x++){ //ToDo - not sure if this works well for padded canvas objects (ie such that don't end on an even byte border)
-        pos=1;
+    for (int16_t y=0;y<=this->_height;y++){
+      for (int16_t x=0;x<this->_width;){ //ToDo - not sure if this works well for padded canvas objects (ie such that don't end on an even byte border)
         c=this->getPixelColorIndex(x,y);
+        pos=1;
         if(c!=_transparent){
-          while(x+pos<=this->_width && this->getPixelColorIndex(x+pos++, y)==c);
-          display->drawFastHLine(x0+x,y0+y,pos-1,getColor(c));
+          while(x+pos-1<=this->_width && this->getPixelColorIndex(x+pos++, y)==c);
+          pos--; //pos will always overshoot by 1
+          (pos>1)?display->drawFastHLine(x0+x,y0+y,pos,getColor(c)):display->drawPixel(x0+x,y0+y,getColor(c));
+          //Serial.printf("(h) x: %i, y: %i, c: %i, l: %i\n",x,y,c,pos);
           x+=pos;
         }
       }
     }
   }else{
-    for (int16_t x=0;x<this->_width;x++){
-      for (int16_t y=0;y<this->_height;y++){
+    for (int16_t x=0;x<=this->_width;x++){
+      for (int16_t y=0;y<this->_height;){
         pos=1;
         c=this->getPixelColorIndex(x,y);
         if(c!=_transparent){
-          while(y+pos<=this->_height && this->getPixelColorIndex(x, y+pos++)==c);
-          display->drawFastVLine(x0+x,y0+y,pos,getColor(c));
+          while(y+pos-1<=this->_height && this->getPixelColorIndex(x, y+pos++)==c);
+          pos--;//pos will always overshoot by 1
+          (pos>1)?display->drawFastVLine(x0+x,y0+y,pos,getColor(c)):display->drawPixel(x0+x,y0+y,getColor(c));
+          //if (pos>1) Serial.printf("(v) x: %i, y: %i, c: %i, l: %i\n",x,y,c,pos-1);
           y+=pos;
         }
       }
