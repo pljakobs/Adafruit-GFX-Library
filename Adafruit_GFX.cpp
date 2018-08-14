@@ -1924,20 +1924,6 @@ void Adafruit_GFX::getTextBounds(const __FlashStringHelper *str, int16_t x, int1
     }
 }
 
-/**************************************************************************/
-/*!
-    @brief      Get width of the display, accounting for the current rotation
-    @returns    Width in pixels
-*/
-/**************************************************************************/
-// Same as above, but for String strings
-void Adafruit_GFX::getTextBounds(const String &str,	int16_t x, int16_t y, int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h) {
-    if (str.length() != 0) {
-        getTextBounds(const_cast<char*>(str.c_str()), x, y, x1, y1, w, h);
-    }
-}
-
-
 // Return the size of the display (per current rotation)
 int16_t Adafruit_GFX::width(void) const {
     return _width;
