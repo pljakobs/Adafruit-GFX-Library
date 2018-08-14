@@ -12,6 +12,8 @@
 #endif
 #include <vector>
 
+#define ERR_NOMEM       1
+#define ERR_OUTOFRANGE  2
 
 /// A GFX 1-bit canvas context for graphics
 class GFXcanvas1 : public Adafruit_GFX {
@@ -19,7 +21,9 @@ class GFXcanvas1 : public Adafruit_GFX {
   GFXcanvas1(uint16_t w, uint16_t h);
   ~GFXcanvas1(void);
   void     drawPixel(int16_t x, int16_t y, uint16_t color),
-           fillScreen(uint16_t color);
+           fillScreen(uint16_t color),
+           drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color),
+           drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color);
   uint8_t *getBuffer(void);
   uint8_t getByte(int16_t x, int16_t y);
   bool    getPixel(int16_t x, int16_t y);
@@ -89,18 +93,21 @@ public:
   uint16_t
     getPixel565(int16_t x, int16_t y);
   uint8_t
+    getLastError(),
     getPixelColorIndex(int16_t x, int16_t y),
     getDepth();
   uint8_t *
     getBuffer(uint8_t bitmap);
 private:
-  uint8_t _depth;
-  uint8_t _transparent;
-  bool    _useTransparency,_textHint;
+  uint8_t
+    _depth,
+    _last_ERR,
+    _transparent;
+  bool
+    _useTransparency,
+    _textHint;
   std::vector <color24> palette;
   std::vector <GFXcanvas1*> bitplane;
-  //color24 palette[];
-  //GFXcanvas1 bitplane[];
 };
 
 #endif // _ADAFRUIT_GFX_CANVASH

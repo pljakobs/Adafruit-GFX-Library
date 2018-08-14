@@ -7,7 +7,7 @@
 #elif defined(ESP8266) || defined(ESP32)
   #include <pgmspace.h>
 #endif
-#define CALLTRACE 1
+//#define CALLTRACE 1
 // -------------------------------------------------------------------------
 
 // GFXcanvas1, GFXcanvas8 and GFXcanvas16 (currently a WIP, don't get too
@@ -185,6 +185,34 @@ uint8_t GFXcanvas1::getByte(int16_t x, int16_t y) {
       }
       return buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
     }
+  }
+
+  /**************************************************************************/
+  /*!
+     @brief    Write a perfectly horizontal line, overwrite in subclasses if startWrite is defined!
+      @param    x   Left-most x coordinate
+      @param    y   Left-most y coordinate
+      @param    w   Width in pixels
+     @param    color 16-bit 5-6-5 Color to fill with
+  */
+  /**************************************************************************/
+  void GFXcanvas1::drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color){
+    // todo: implement fast h-line drawing by writing whole bytes if possible
+    drawLine(x,y,x+w,y, color);
+  }
+
+  /**************************************************************************/
+  /*!
+     @brief    Write a perfectly vertical line, overwrite in subclasses if startWrite is defined!
+      @param    x   Left-most x coordinate
+      @param    y   Left-most y coordinate
+      @param    h   height in pixels
+     @param    color 16-bit 5-6-5 Color to fill with
+  */
+  /**************************************************************************/
+  void GFXcanvas1::drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color){
+    // todo: implement fast V-line drawing by writing whole bytes if possible
+    drawLine(x,y,x,y+h,color);
   }
 
 /**************************************************************************/
@@ -413,6 +441,8 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
   _width=w;
   _height=h;
   _depth=d;
+  _last_ERR=0;
+  GFXcanvas1 *plane;
   /*!
     @remark
         depth is depth in bits, not number of colors!
@@ -446,29 +476,41 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
         palette[F]=color24{r,g,b};
         ``````
 
-   */
-   Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\n intializing canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",_width, _height, _depth);
+  */
+  Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\n intializing canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",_width, _height, _depth);
   if(_depth <=8 && _depth >=1){
-    uint8_t numColors = 1<<_depth;
-    palette.reserve(numColors);
     //Serial.printf("struct palette: sizeof(palette[0].r)=%i, sizeof(palette[0].g)=%i, sizeof(palette[0].b)=%i\n",sizeof(palette[0].r),sizeof(palette[0].g),sizeof(palette[0].b));
-    bitplane.reserve(_depth);
+    //bitplane.reserve(_depth);
     for( uint8_t i=0;i<_depth;i++){
-      bitplane.push_back(new GFXcanvas1(_width, _height)); //Todo needs error handling if one bitplane cannot be allocated
-      Serial.printf("initialized bitplane[%i] at %p\n",i,bitplane.at(i)->getBuffer());
+      plane=new GFXcanvas1(_width, _height);
+      if(plane->getBuffer()==0){
+        /* could not create bitplane i, out of memory
+         * reduce canvas depth to i to be able to
+         * continue and set error condition
+         */
+        _depth=i;
+        _last_ERR=ERR_NOMEM;
+      }else{
+        bitplane.push_back(plane);
+        Serial.printf("initialized bitplane[%i] at %p\n",i,bitplane.at(i)->getBuffer());
+      }
     }
+    bitplane.shrink_to_fit();
     Serial.printf("created bitplanes\n=================\n");
     /*
      * set default palettes (up to 32 colors, anything above that will always be free)
      */
+    uint16_t numColors = 1<<_depth;
+    palette.reserve(numColors);
     Serial.printf("initializing palette for %i colors\nvector has a size of %i(%i)\n",numColors,palette.capacity(),sizeof(palette[0]));
-    for(uint8_t n=0;n<numColors;n++){
+    for(uint8_t n=0;n<numColors-1;n++){
       palette.push_back({.r=0,.g=0,.b=0});
     }
     /*!
      * the constructor creates a base palette so the canvas is usable right away
      * overwrite using setColor() as needed.
      */
+
     switch (_depth) {
       case 1:
         //palette.at(0)={.r=  0, .g=  0, .b=  0};
@@ -548,6 +590,7 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
         break;
     }
   }
+
   Serial.printf("GFXiCanvas consturctur finished\ncreated %i bitplanes and %i palette positions\n\n>>>>>>>>>>>>>>>>>>>>>\n",bitplane.capacity(), palette.capacity());
 }
 /**************************************************************************/
@@ -587,6 +630,7 @@ uint8_t GFXiCanvas::getDepth(){
 /***************************************************************************/
 void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
   if(colorIndex<(1<<this->_depth)){
+    _last_ERR=0;
     #ifdef CALLTRACE
     Serial.printf("called drawPixel in canvas with 8Bit color\n");
     #endif
@@ -595,6 +639,8 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
       //Serial.printf("bitplane:%i, val:%i\n",i,(colorIndex && 1<<i));
       this->bitplane.at(i)->drawPixel(x,y,(colorIndex & (1<<i)));
       }
+  }else{
+    _last_ERR=ERR_OUTOFRANGE;
   }
 }
 /**************************************************************************/
@@ -630,11 +676,13 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
 color24 GFXiCanvas::getColor(uint8_t i){
   //if(i!=0) Serial.printf("index: %i ",i);
   if(i<(1<<this->_depth)){
+    _last_ERR=0;
     color24 c=this->palette.at(i);
     //if(i!=0) Serial.printf("color: r: %i, g: %i, b: %i\n",c.r,c.g,c.b);
     return this->palette.at(i);
   }else{
     return (color24){0,0,0};
+    _last_ERR=ERR_OUTOFRANGE;
   }
 }
 /**************************************************************************/
@@ -646,7 +694,10 @@ color24 GFXiCanvas::getColor(uint8_t i){
 /***************************************************************************/
 void GFXiCanvas::setColor(uint8_t i, color24 c){
   if(i<(1<<this->_depth)){
+    _last_ERR=0;
     this->palette.at(i)=c;
+  }else{
+    _last_ERR=ERR_OUTOFRANGE;
   }
 }
 /**************************************************************************/
@@ -710,7 +761,10 @@ uint16_t GFXiCanvas::getPixel565(int16_t x, int16_t y) {
 /***************************************************************************/
 void GFXiCanvas::setTransparent(uint8_t colorIndex, bool t){
   if(colorIndex<(1<<this->_depth)){
+    _last_ERR=0;
     _transparent=colorIndex;
+  }else{
+    _last_ERR=ERR_OUTOFRANGE;
   }
   _useTransparency=t;
 }
@@ -725,10 +779,7 @@ void GFXiCanvas::setTransparent(uint8_t colorIndex, bool t){
 */
 /***************************************************************************/
 void GFXiCanvas::setTransparent(uint16_t colorIndex, bool t){
-  if((colorIndex & 0x0f)<(1<<this->_depth)){
-    _transparent=(uint8_t)colorIndex;
-  }
-  _useTransparency=t;
+  setTransparent((uint8_t)(colorIndex&0xff),t);
 }
 /**************************************************************************/
 /*!
@@ -971,8 +1022,10 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
 uint8_t *GFXiCanvas::getBuffer(uint8_t plane){
   if(plane>=0 && plane<this->_depth){
     return this->bitplane.at(plane)->getBuffer();
+  }else{
+    _last_ERR=ERR_OUTOFRANGE;
+    return false;
   }
-  return false;
 }
 
 void GFXiCanvas::clearDisplay(){
@@ -983,4 +1036,8 @@ void GFXiCanvas::clearDisplay(){
 
 void GFXiCanvas::setTextHint(bool h){
   _textHint=h;
+}
+
+uint8_t GFXiCanvas::getLastError(){
+  return this->_last_ERR;
 }
