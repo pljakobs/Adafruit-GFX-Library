@@ -495,7 +495,7 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
         Serial.printf("initialized bitplane[%i] at %p\n",i,bitplane.at(i)->getBuffer());
       }
     }
-    bitplane.shrink_to_fit();
+    //bitplane.shrink_to_fit();
     Serial.printf("created bitplanes\n=================\n");
     /*
      * set default palettes (up to 32 colors, anything above that will always be free)
@@ -503,9 +503,11 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
     uint16_t numColors = 1<<_depth;
     palette.reserve(numColors);
     Serial.printf("initializing palette for %i colors\nvector has a size of %i(%i)\n",numColors,palette.capacity(),sizeof(palette[0]));
-    for(uint8_t n=0;n<numColors-1;n++){
+    for(uint16_t n=0;n<numColors;n++){
       palette.push_back({.r=0,.g=0,.b=0});
+      Serial.printf("set color position %i to {r=%i, g=%i, b=%i}\n",n,palette.at(n).r, palette.at(n).g, palette.at(n).b);
     }
+    Serial.printf("cleared palette, depth %i\n", _depth);
     /*!
      * the constructor creates a base palette so the canvas is usable right away
      * overwrite using setColor() as needed.
@@ -513,25 +515,51 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
 
     switch (_depth) {
       case 1:
-        //palette.at(0)={.r=  0, .g=  0, .b=  0};
         palette.at(0)={ 0,  0,  0};
         palette.at(1)={255,255,255}; //ssd1306 OLEDs need uint16_t 1 to draw pixel
         break;
       case 2:
-        palette.at(0)={.r=  0, .g=  0, .b=  0};
-        palette.at(1)={.r=255, .g=255, .b=255};
-        palette.at(2)={.r=255, .g=  0, .b=  0};
-        palette.at(3)={.r=255, .g=255, .b=  0};
+        Serial.printf("palette positions for depth 3...");
+        Serial.printf("\npalette position 0 address=%p",&palette.at(0));
+        palette.at( 0)={.r=  0, .g=  0, .b=  0};
+        Serial.printf(" done");
+        Serial.printf("\npalette position 1 address=%p",&palette.at(1));
+        palette.at( 1)={.r=255, .g=255, .b=255};
+        Serial.printf(" done");
+        Serial.printf("\npalette position 2 address=%p",&palette.at(2));
+        palette.at( 2)={.r=255, .g=  0, .b=  0};
+        Serial.printf(" done");
+        Serial.printf("\npalette position 3 address=%p",&palette.at(3));
+        palette.at( 3)={.r=  0, .g=255, .b=  0};
+        Serial.printf(" done");
+        Serial.printf("\ndone\n");
         break;
       case 3:
+        Serial.printf("palette positions for depth 3...");
+        Serial.printf("\npalette position 0 address=%p",&palette.at(0));
         palette.at( 0)={.r=  0, .g=  0, .b=  0};
+        Serial.printf(" done");
+        Serial.printf("\npalette position 1 address=%p",&palette.at(1));
         palette.at( 1)={.r=255, .g=255, .b=255};
+        Serial.printf(" done");
+        Serial.printf("\npalette position 2 address=%p",&palette.at(2));
         palette.at( 2)={.r=255, .g=  0, .b=  0};
+        Serial.printf(" done");
+        Serial.printf("\npalette position 3 address=%p",&palette.at(3));
         palette.at( 3)={.r=  0, .g=255, .b=  0};
+        Serial.printf(" done");
+        Serial.printf("\npalette position 4 address=%p",&palette.at(4));
         palette.at( 4)={.r=  0, .g=  0, .b=255};
+        Serial.printf(" done");
+        Serial.printf("\npalette position 5 address=%p",&palette.at(5));
         palette.at( 5)={.r=255, .g=  0, .b=255};
+        Serial.printf(" done");
+        Serial.printf("\npalette position 6 address=%p",&palette.at(6));
         palette.at( 6)={.r=255, .g=255, .b=  0};
+        Serial.printf(" done");
+        Serial.printf("\npalette position 7 address=%p",&palette.at(7));
         palette.at( 7)={.r=  0, .g=255, .b=255};
+        Serial.printf("\ndone\n");
         break;
       case 4:
         palette.at( 0)= {.r= 20, .g= 12, .b= 28};
@@ -589,9 +617,10 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
         palette.at(31)={.r=111, .g=119, .b=107};
         break;
     }
+    Serial.printf("GFXiCanvas constructor finished\ncreated %i bitplanes and %i palette positions\n\n>>>>>>>>>>>>>>>>>>>>>\n",bitplane.capacity(), palette.capacity());
+  }else{
+    _last_ERR=ERR_OUTOFRANGE;
   }
-
-  Serial.printf("GFXiCanvas consturctur finished\ncreated %i bitplanes and %i palette positions\n\n>>>>>>>>>>>>>>>>>>>>>\n",bitplane.capacity(), palette.capacity());
 }
 /**************************************************************************/
 /*!
@@ -1024,7 +1053,7 @@ uint8_t *GFXiCanvas::getBuffer(uint8_t plane){
     return this->bitplane.at(plane)->getBuffer();
   }else{
     _last_ERR=ERR_OUTOFRANGE;
-    return false;
+    return 0;
   }
 }
 

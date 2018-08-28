@@ -111,33 +111,3 @@ private:
 };
 
 #endif // _ADAFRUIT_GFX_CANVASH
-
-/*
- * interleaved bitplane canvasses
- * class iCanvas : public Adafruit_GFX
- *
- * iCanvas::iCanvas(uint16_t width, uint16_t height, uint8_t depth)
- *
- * iCanvas::Palette()
- * GFXcanvas1 bitplane
- *
- * palette[2^depth]
- *
- * struct iCanvas{
- *  palette  myPalette;
- *  bitplane  *bitplane[depth];
- * }
- *
- * // from amiga gfx library:
- * struct BitMap
- * {
- *    UWORD   BytesPerRow;
- *    UWORD   Rows;
- *    UBYTE   Flags;
- *    UBYTE   Depth;
- *    UWORD   pad;
- *    PLANEPTR Planes[8];
- * };
- *
- *
- */
