@@ -505,7 +505,6 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
     Serial.printf("initializing palette for %i colors\nvector has a size of %i(%i)\n",numColors,palette.capacity(),sizeof(palette[0]));
     for(uint16_t n=0;n<numColors;n++){
       palette.push_back({.r=0,.g=0,.b=0});
-      Serial.printf("set color position %i to {r=%i, g=%i, b=%i}\n",n,palette.at(n).r, palette.at(n).g, palette.at(n).b);
     }
     Serial.printf("cleared palette, depth %i\n", _depth);
     /*!
@@ -517,50 +516,23 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
       case 1:
         palette.at(0)={ 0,  0,  0};
         palette.at(1)={255,255,255}; //ssd1306 OLEDs need uint16_t 1 to draw pixel
-        break;
+      break;
       case 2:
-        Serial.printf("palette positions for depth 3...");
-        Serial.printf("\npalette position 0 address=%p",&palette.at(0));
         palette.at( 0)={.r=  0, .g=  0, .b=  0};
-        Serial.printf(" done");
-        Serial.printf("\npalette position 1 address=%p",&palette.at(1));
         palette.at( 1)={.r=255, .g=255, .b=255};
-        Serial.printf(" done");
-        Serial.printf("\npalette position 2 address=%p",&palette.at(2));
         palette.at( 2)={.r=255, .g=  0, .b=  0};
-        Serial.printf(" done");
-        Serial.printf("\npalette position 3 address=%p",&palette.at(3));
         palette.at( 3)={.r=  0, .g=255, .b=  0};
-        Serial.printf(" done");
-        Serial.printf("\ndone\n");
-        break;
+      break;
       case 3:
-        Serial.printf("palette positions for depth 3...");
-        Serial.printf("\npalette position 0 address=%p",&palette.at(0));
         palette.at( 0)={.r=  0, .g=  0, .b=  0};
-        Serial.printf(" done");
-        Serial.printf("\npalette position 1 address=%p",&palette.at(1));
         palette.at( 1)={.r=255, .g=255, .b=255};
-        Serial.printf(" done");
-        Serial.printf("\npalette position 2 address=%p",&palette.at(2));
         palette.at( 2)={.r=255, .g=  0, .b=  0};
-        Serial.printf(" done");
-        Serial.printf("\npalette position 3 address=%p",&palette.at(3));
         palette.at( 3)={.r=  0, .g=255, .b=  0};
-        Serial.printf(" done");
-        Serial.printf("\npalette position 4 address=%p",&palette.at(4));
         palette.at( 4)={.r=  0, .g=  0, .b=255};
-        Serial.printf(" done");
-        Serial.printf("\npalette position 5 address=%p",&palette.at(5));
         palette.at( 5)={.r=255, .g=  0, .b=255};
-        Serial.printf(" done");
-        Serial.printf("\npalette position 6 address=%p",&palette.at(6));
         palette.at( 6)={.r=255, .g=255, .b=  0};
-        Serial.printf(" done");
-        Serial.printf("\npalette position 7 address=%p",&palette.at(7));
         palette.at( 7)={.r=  0, .g=255, .b=255};
-        Serial.printf("\ndone\n");
-        break;
+      break;
       case 4:
         palette.at( 0)= {.r= 20, .g= 12, .b= 28};
         palette.at( 1)= {.r= 68, .g= 36, .b= 52};
@@ -578,7 +550,7 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
         palette.at(13)= {.r=109, .g=194, .b=202};
         palette.at(14)= {.r=218, .g=212, .b= 94};
         palette.at(15)= {.r=222, .g=238, .b=214};
-        break;
+      break;
       case 5:
       case 6:
       case 7:
@@ -615,8 +587,9 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
         palette.at(29)={.r= 54, .g= 97, .b=101};
         palette.at(30)={.r=109, .g=106, .b= 47};
         palette.at(31)={.r=111, .g=119, .b=107};
-        break;
+      break;
     }
+    //      Serial.printf("set color position %i to {r=%i, g=%i, b=%i}\n",n,palette.at(n).r, palette.at(n).g, palette.at(n).b);
     Serial.printf("GFXiCanvas constructor finished\ncreated %i bitplanes and %i palette positions\n\n>>>>>>>>>>>>>>>>>>>>>\n",bitplane.capacity(), palette.capacity());
   }else{
     _last_ERR=ERR_OUTOFRANGE;
@@ -1004,7 +977,7 @@ void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
 void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
   uint8_t c;
   int16_t pos;
-  Serial.printf("entering quickDraw\n");
+  //Serial.printf("entering quickDraw\n");
   /*
    * if useTransparency is set, color index transparent is ignored (as set
    * by setTransparent()). If it's not set, the drawing area is filled with
@@ -1012,7 +985,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
    */
   if(!_useTransparency){
     display->fillRect(x0,y0,this->_width, this->_height, _transparent);
-    Serial.printf("cleared screen area \n");
+    //Serial.printf("cleared screen area \n");
   }
   /*
    * use aspect ration as hint for longest run
@@ -1020,14 +993,18 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
   if(this->_width>=this->_height && !_textHint){
     for (int16_t y=0;y<=this->_height;y++){
       for (int16_t x=0;x<this->_width;){ //ToDo - not sure if this works well for padded canvas objects (ie such that don't end on an even byte border)
-        c=this->getPixelColorIndex(x,y);
         pos=1;
+        //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
+        c=this->getPixelColorIndex(x,y);
+        //Serial.printf("done\n");
         if(c!=_transparent){
           while(x+pos-1<=this->_width && this->getPixelColorIndex(x+pos++, y)==c);
           pos--; //pos will always overshoot by 1
           (pos>1)?display->drawFastHLine(x0+x,y0+y,pos,getColor(c)):display->drawPixel(x0+x,y0+y,getColor(c));
           //Serial.printf("(h) x: %i, y: %i, c: %i, l: %i\n",x,y,c,pos);
           x+=pos;
+        }else{
+          x++;
         }
       }
     }
@@ -1035,13 +1012,17 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
     for (int16_t x=0;x<=this->_width;x++){
       for (int16_t y=0;y<this->_height;){
         pos=1;
+        //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
         c=this->getPixelColorIndex(x,y);
+        //Serial.printf("%i done\n",c);
         if(c!=_transparent){
           while(y+pos-1<=this->_height && this->getPixelColorIndex(x, y+pos++)==c);
           pos--;//pos will always overshoot by 1
           (pos>1)?display->drawFastVLine(x0+x,y0+y,pos,getColor(c)):display->drawPixel(x0+x,y0+y,getColor(c));
-          //if (pos>1) Serial.printf("(v) x: %i, y: %i, c: %i, l: %i\n",x,y,c,pos-1);
+          //Serial.printf("(v) x: %i, y: %i, c: %i, l: %i\n",x,y,c,pos-1);
           y+=pos;
+        }else{
+          y++;
         }
       }
     }
