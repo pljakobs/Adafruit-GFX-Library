@@ -495,7 +495,6 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
         Serial.printf("initialized bitplane[%i] at %p\n",i,bitplane.at(i)->getBuffer());
       }
     }
-    //bitplane.shrink_to_fit();
     Serial.printf("created bitplanes\n=================\n");
     /*
      * set default palettes (up to 32 colors, anything above that will always be free)
