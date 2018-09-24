@@ -711,7 +711,9 @@ void GFXiCanvas::setColor(uint8_t i, color24 c){
 /***************************************************************************/
 uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
   uint8_t c=0;
+  _last_ERR=0;
   //Serial.printf("getPixelColorIndex x:%i, y:%i [",x,y);
+  if(x<0 || x>_width || y<0 || y<_height) _last_ERR=ERR_OUTOFRANGE;
   for(uint8_t i=0;i<this->_depth;i++) {
       //Serial.printf("bitplane %i - ",i);
       //uint8_t b=(this->bitplane.at(i)->getPixel(x,y) & 0x01)<<i;
