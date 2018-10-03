@@ -85,6 +85,7 @@ public:
     setTransparent(uint16_t color,bool t),
     setTransparent(bool t),
     makeHTMLPalette(),
+    dump(usb_serial_class *s),
     setTextHint(bool h);
 
   color24

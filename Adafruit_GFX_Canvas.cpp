@@ -495,7 +495,6 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
         Serial.printf("initialized bitplane[%i] at %p\n",i,bitplane.at(i)->getBuffer());
       }
     }
-    Serial.printf("created bitplanes\n=================\n");
     /*
      * set default palettes (up to 32 colors, anything above that will always be free)
      */
@@ -984,10 +983,12 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
    * by setTransparent()). If it's not set, the drawing area is filled with
    * that color index first, hopefully speedign up the on-screen Drawing
    */
+  /*
   if(!_useTransparency){
     display->fillRect(x0,y0,this->_width, this->_height, _transparent);
     //Serial.printf("cleared screen area \n");
   }
+  */
   /*
    * use aspect ration as hint for longest run
    */
@@ -998,7 +999,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
         //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
         c=this->getPixelColorIndex(x,y);
         //Serial.printf("done\n");
-        if(c!=_transparent){
+        if(!(_useTransparency && c==_transparent)){
           while(x+pos-1<=this->_width && this->getPixelColorIndex(x+pos++, y)==c);
           pos--; //pos will always overshoot by 1
           (pos>1)?display->drawFastHLine(x0+x,y0+y,pos,getColor(c)):display->drawPixel(x0+x,y0+y,getColor(c));
@@ -1016,7 +1017,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
         //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
         c=this->getPixelColorIndex(x,y);
         //Serial.printf("%i done\n",c);
-        if(c!=_transparent){
+        if(!(_useTransparency && c==_transparent)){
           while(y+pos-1<=this->_height && this->getPixelColorIndex(x, y+pos++)==c);
           pos--;//pos will always overshoot by 1
           (pos>1)?display->drawFastVLine(x0+x,y0+y,pos,getColor(c)):display->drawPixel(x0+x,y0+y,getColor(c));
@@ -1051,4 +1052,33 @@ void GFXiCanvas::setTextHint(bool h){
 
 uint8_t GFXiCanvas::getLastError(){
   return this->_last_ERR;
+}
+
+void GFXiCanvas::dump(usb_serial_class *s){
+  if(&s){
+    s->printf("dumping canvas\n==============\nwidth : %.4i\nheight: %.4i\ndepth : %.4i\n\n",this->_width, this->_height,this->_depth);
+    s->printf("Palette positions: %i\n", 1<<this->_depth);
+    for(uint8_t i=0;i<1<<this->_depth;i++){
+      s->printf("[%02i]: (%03i, %03i, %03i)\n",i,this->palette.at(i).r,this->palette.at(i).g,this->palette.at(i).b );
+    }
+
+    s->printf("\n      ");
+    for (int16_t i=0;i<=this->_width;i++){
+      s->printf("%02i ",i);
+    }
+    s->printf("\n      ");
+    for (int16_t i=0;i<=this->_width;i++){
+      s->printf("---");
+    }
+
+    s->printf("\n");
+    for (int16_t y=0;y<this->_height;y++){
+      s->printf("%04i:",y);
+      for (int16_t x=0;x<=this->_width;x++){
+
+        s->printf(" %02x",this->getPixelColorIndex(x,y));
+      }
+      s->printf("\n");
+    }
+  }
 }
