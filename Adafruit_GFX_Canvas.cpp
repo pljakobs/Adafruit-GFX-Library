@@ -770,6 +770,14 @@ void GFXiCanvas::setTransparent(uint8_t colorIndex, bool t){
   }
   _useTransparency=t;
 }
+
+void GFXiCanvas::setRotation(uint8_t rot){
+  _rotation=rot;
+  for(uint8_t i=0;i<this->_depth;i++){
+    bitplane.at(i)->setRotation(_rotation);
+  }
+}
+
 /**************************************************************************/
 /*!
    @brief    set the palette value that should be used as transparent
@@ -993,7 +1001,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
    * use aspect ration as hint for longest run
    */
   if(this->_width>=this->_height && !_textHint){
-    for (int16_t y=0;y<=this->_height;y++){
+    for (int16_t y=0;y<this->_height;y++){
       for (int16_t x=0;x<this->_width;){ //ToDo - not sure if this works well for padded canvas objects (ie such that don't end on an even byte border)
         pos=1;
         //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
@@ -1011,7 +1019,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
       }
     }
   }else{
-    for (int16_t x=0;x<=this->_width;x++){
+    for (int16_t x=0;x<this->_width;x++){
       for (int16_t y=0;y<this->_height;){
         pos=1;
         //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
@@ -1021,7 +1029,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
           while(y+pos-1<=this->_height && this->getPixelColorIndex(x, y+pos++)==c);
           pos--;//pos will always overshoot by 1
           (pos>1)?display->drawFastVLine(x0+x,y0+y,pos,getColor(c)):display->drawPixel(x0+x,y0+y,getColor(c));
-          //Serial.printf("(v) x: %i, y: %i, c: %i, l: %i\n",x,y,c,pos-1);
+          //Serial.printf("(v) x0: %i x: %i, y0: %i y: %i, c: %i, l: %i\n",x0,x,y0,y,c,pos-1);
           y+=pos;
         }else{
           y++;
@@ -1063,18 +1071,18 @@ void GFXiCanvas::dump(usb_serial_class *s){
     }
 
     s->printf("\n      ");
-    for (int16_t i=0;i<=this->_width;i++){
+    for (int16_t i=0;i<this->_width;i++){
       s->printf("%02i ",i);
     }
     s->printf("\n      ");
-    for (int16_t i=0;i<=this->_width;i++){
+    for (int16_t i=0;i<this->_width;i++){
       s->printf("---");
     }
 
     s->printf("\n");
     for (int16_t y=0;y<this->_height;y++){
       s->printf("%04i:",y);
-      for (int16_t x=0;x<=this->_width;x++){
+      for (int16_t x=0;x<this->_width;x++){
 
         s->printf(" %02x",this->getPixelColorIndex(x,y));
       }

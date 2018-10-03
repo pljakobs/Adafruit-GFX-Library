@@ -84,9 +84,10 @@ public:
     setTransparent(uint8_t color,bool t),
     setTransparent(uint16_t color,bool t),
     setTransparent(bool t),
+    setRotation(uint8_t rot),
+    setTextHint(bool h),
     makeHTMLPalette(),
-    dump(usb_serial_class *s),
-    setTextHint(bool h);
+    dump(usb_serial_class *s);
 
   color24
     getPixel24(int16_t x, int16_t y),
@@ -103,7 +104,8 @@ private:
   uint8_t
     _depth,
     _last_ERR,
-    _transparent;
+    _transparent,
+    _rotation;
   bool
     _useTransparency,
     _textHint;
