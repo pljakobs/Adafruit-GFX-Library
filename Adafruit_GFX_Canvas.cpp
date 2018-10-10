@@ -632,7 +632,7 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
   if(colorIndex<(1<<this->_depth)){
     _last_ERR=0;
     #ifdef CALLTRACE
-    Serial.printf("called drawPixel in canvas with 8Bit color\n");
+    Serial.printf("called drawPixel in canvas with 8Bit color x: %i, y: %i c: %i\n",x,y,colorIndex);
     #endif
     //Serial.printf("drawing pixel at x:%i, y:%i\n",x,y);
     for(uint8_t i=0;i<this->_depth;i++) {
@@ -968,21 +968,19 @@ void GFXiCanvas::makeHTMLPalette(){
   }
 }
 
-void GFXiCanvas::draw(int16_t x0, int16_t y0, Adafruit_GFX *display){
-  for (int16_t y=0;y<this->_height;y++){
-    for (int16_t x=0;x<this->_width;x++){
-      #ifdef GFX_ENABLE_24Bit
-        //color24 pc=this->getPixel24(x,y);
-        display->drawPixel(x0+x, y0+y, this->getPixel24(x,y));
-        //if(pc.r+pc.g+pc.b!=0) Serial.printf("x: %i, y: %i, col: .r=%i, .g=%i, g=%i\n",x,y,pc.r,pc.g,pc.b);
-      #elif
-        display->drawPixel(x0+x, y0+y, this->getPixel565(x,y));
-      #endif
-    }
-  }
+void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height){
+  // partial redraw for the rect starting at x0, y0 with width and height
+  quickDraw(x, y, display, x0, y0, width, height);
 }
 
-void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
+void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
+  // full redraw
+  Serial.printf("starting quickDraw with x: %i, y: %i, w: %i, h: %i\n",x,y,this->_width, this->_height);
+  quickDraw(x, y, display, (uint16_t)0, (uint16_t)0, this->_width, this->_height);
+}
+
+void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_t x1, int16_t y1, int16_t w, int16_t h){
+  // partial redraw, I apologize for the x0/x1 bodge
   uint8_t c;
   int16_t pos;
   //Serial.printf("entering quickDraw\n");
@@ -1000,17 +998,26 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
   /*
    * use aspect ration as hint for longest run
    */
-  if(this->_width>=this->_height && !_textHint){
-    for (int16_t y=0;y<this->_height;y++){
-      for (int16_t x=0;x<this->_width;){ //ToDo - not sure if this works well for padded canvas objects (ie such that don't end on an even byte border)
-        pos=1;
+  uint16_t
+    xs=x0+x1,
+    ys=y0+y1;
+  //this->dump(&Serial);
+  //Serial.printf("quickDraw(%i, %i, <display>, %i, %i, %i, %i)\nCanvas width: %i, height: %i\n",x0, y0, x1, y1, width, height,_width, _height);
+  //(xs+width>display->_width)?w=_width-xs:w=width;
+  //(ys+height>display->_height)?h=_height-ys:h=height;
+  //if(w>=h && !_textHint){
+  if(w>=h){
+      Serial.printf("using horiztical drawing with w: %i, h: %i\n", w, h);
+    for (int16_t y=0;y<h;y++){
+      for (int16_t x=0;x<w;){ //ToDo - not sure if this works well for padded canvas objects (ie such that don't end on an even byte border)
+        pos=0;
         //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
-        c=this->getPixelColorIndex(x,y);
+        c=this->getPixelColorIndex(x1+x,y1+y);
         //Serial.printf("done\n");
         if(!(_useTransparency && c==_transparent)){
-          while(x+pos-1<=this->_width && this->getPixelColorIndex(x+pos++, y)==c);
+          while(x+pos<=w && this->getPixelColorIndex(x1+x+pos++, y1+y)==c);
           pos--; //pos will always overshoot by 1
-          (pos>1)?display->drawFastHLine(x0+x,y0+y,pos,getColor(c)):display->drawPixel(x0+x,y0+y,getColor(c));
+          (pos>1)?display->drawFastHLine(xs+x,ys+y,pos,getColor(c)):display->drawPixel(xs+x,ys+y,getColor(c));
           //Serial.printf("(h) x: %i, y: %i, c: %i, l: %i\n",x,y,c,pos);
           x+=pos;
         }else{
@@ -1019,18 +1026,23 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display){
       }
     }
   }else{
-    for (int16_t x=0;x<this->_width;x++){
-      for (int16_t y=0;y<this->_height;){
-        pos=1;
+    Serial.printf("using vertical drawing with w: %i, h: %i\n", w, h);
+    for (int16_t x=0;x<w;x++){
+      for (int16_t y=0;y<h;){
+        pos=0;
         //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
-        c=this->getPixelColorIndex(x,y);
+        c=this->getPixelColorIndex(x1+x,y1+y);
         //Serial.printf("%i done\n",c);
+        //Serial.printf("-> x: %i, y: %i\n",x,y);
         if(!(_useTransparency && c==_transparent)){
-          while(y+pos-1<=this->_height && this->getPixelColorIndex(x, y+pos++)==c);
+          while(y+pos<=h && this->getPixelColorIndex(x1+x, y1+y+pos++)==c){
+            //Serial.printf("--> y: %i, pos: %i\n",y, pos);
+          }
           pos--;//pos will always overshoot by 1
-          (pos>1)?display->drawFastVLine(x0+x,y0+y,pos,getColor(c)):display->drawPixel(x0+x,y0+y,getColor(c));
-          //Serial.printf("(v) x0: %i x: %i, y0: %i y: %i, c: %i, l: %i\n",x0,x,y0,y,c,pos-1);
+          (pos>1)?display->drawFastVLine(xs+x,ys+y,pos,getColor(c)):display->drawPixel(xs+x,ys+y,getColor(c));
+          //erial.printf("(v) x0: %i x: %i, y0: %i y: %i, c: %i, l: %i\n",x0,x,y0,y,c,pos);
           y+=pos;
+          //delay(100);
         }else{
           y++;
         }

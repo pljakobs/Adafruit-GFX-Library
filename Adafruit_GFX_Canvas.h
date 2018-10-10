@@ -78,8 +78,9 @@ public:
     //drawFastVLine(int16_t x, int16_t y, int16_t h, uint8_t color),
 
     setColor(uint8_t index, color24 color),
+    draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height),
     draw(int16_t x, int16_t y, Adafruit_GFX *display),
-    quickDraw(int16_t x, int16_t y, Adafruit_GFX *display),
+    quickDraw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height),
     clearDisplay(void),
     setTransparent(uint8_t color,bool t),
     setTransparent(uint16_t color,bool t),
