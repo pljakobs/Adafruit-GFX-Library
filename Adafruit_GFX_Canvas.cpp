@@ -998,16 +998,14 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_
   /*
    * use aspect ration as hint for longest run
    */
-  uint16_t
-    xs=x0+x1,
-    ys=y0+y1;
+  uint16_t xs=x0+x1;
+  uint16_t ys=y0+y1;
   //this->dump(&Serial);
-  //Serial.printf("quickDraw(%i, %i, <display>, %i, %i, %i, %i)\nCanvas width: %i, height: %i\n",x0, y0, x1, y1, width, height,_width, _height);
+  Serial.printf("quickDraw(%i, %i, <display>, %i, %i, %i, %i)\nCanvas width: %i, height: %i\n",x0, y0, x1, y1, w, h,_width, _height);
   //(xs+width>display->_width)?w=_width-xs:w=width;
   //(ys+height>display->_height)?h=_height-ys:h=height;
-  //if(w>=h && !_textHint){
-  if(w>=h){
-      Serial.printf("using horiztical drawing with w: %i, h: %i\n", w, h);
+  if(w>=h && !_textHint){
+    //Serial.printf("using horiztical drawing with w: %i, h: %i\n", w, h);
     for (int16_t y=0;y<h;y++){
       for (int16_t x=0;x<w;){ //ToDo - not sure if this works well for padded canvas objects (ie such that don't end on an even byte border)
         pos=0;
@@ -1026,7 +1024,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_
       }
     }
   }else{
-    Serial.printf("using vertical drawing with w: %i, h: %i\n", w, h);
+    //Serial.printf("using vertical drawing with w: %i, h: %i\n", w, h);
     for (int16_t x=0;x<w;x++){
       for (int16_t y=0;y<h;){
         pos=0;
