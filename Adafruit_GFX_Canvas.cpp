@@ -975,7 +975,7 @@ void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, i
 
 void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
   // full redraw
-  Serial.printf("starting quickDraw with x: %i, y: %i, w: %i, h: %i\n",x,y,this->_width, this->_height);
+  //Serial.printf("starting quickDraw with x: %i, y: %i, w: %i, h: %i\n",x,y,this->_width, this->_height);
   quickDraw(x, y, display, (uint16_t)0, (uint16_t)0, this->_width, this->_height);
 }
 
@@ -1001,7 +1001,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_
   uint16_t xs=x0+x1;
   uint16_t ys=y0+y1;
   //this->dump(&Serial);
-  Serial.printf("quickDraw(%i, %i, <display>, %i, %i, %i, %i)\nCanvas width: %i, height: %i\n",x0, y0, x1, y1, w, h,_width, _height);
+  //Serial.printf("quickDraw(%i, %i, <display>, %i, %i, %i, %i)\nCanvas width: %i, height: %i\n",x0, y0, x1, y1, w, h,_width, _height);
   //(xs+width>display->_width)?w=_width-xs:w=width;
   //(ys+height>display->_height)?h=_height-ys:h=height;
   if(w>=h && !_textHint){
