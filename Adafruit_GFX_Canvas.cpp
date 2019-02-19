@@ -677,7 +677,7 @@ color24 GFXiCanvas::getColor(uint8_t i){
   //if(i!=0) Serial.printf("index: %i ",i);
   if(i<(1<<this->_depth)){
     _last_ERR=0;
-    color24 c=this->palette.at(i);
+    //color24 c=this->palette.at(i);
     //if(i!=0) Serial.printf("color: r: %i, g: %i, b: %i\n",c.r,c.g,c.b);
     return this->palette.at(i);
   }else{
@@ -773,9 +773,9 @@ void GFXiCanvas::setTransparent(uint8_t colorIndex, bool t){
 
 void GFXiCanvas::setRotation(uint8_t rot){
   _rotation=rot;
-  for(uint8_t i=0;i<this->_depth;i++){
-    bitplane.at(i)->setRotation(_rotation);
-  }
+  //for(uint8_t i=0;i<this->_depth;i++){
+  //bitplane.at(i)->setRotation(_rotation);
+  //}
 }
 
 /**************************************************************************/
@@ -982,7 +982,23 @@ void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
 void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_t x1, int16_t y1, int16_t w, int16_t h){
   // partial redraw, I apologize for the x0/x1 bodge
   uint8_t c;
-  int16_t pos;
+  int16_t pos,t;
+    switch(rotation) {
+        case 1:
+            t = x1;
+            x1 = w - 1 - y1;
+            y1 = t;
+            break;
+        case 2:
+            x1 = w - 1 - x1;
+            y1 = h - 1 - y1;
+            break;
+        case 3:
+            t = x1;
+            x1 = y1;
+            y1 = h - 1 - t;
+            break;
+    }
   //Serial.printf("entering quickDraw\n");
   /*
    * if useTransparency is set, color index transparent is ignored (as set
@@ -998,6 +1014,9 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_
   /*
    * use aspect ration as hint for longest run
    */
+  if(x1+w>this->_width) w=this->_width-x1;
+  if(y1+h>this->_height) h=this->_height-y1;
+
   uint16_t xs=x0+x1;
   uint16_t ys=y0+y1;
   //this->dump(&Serial);
