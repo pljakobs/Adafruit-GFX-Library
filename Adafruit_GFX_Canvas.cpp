@@ -75,29 +75,30 @@ void GFXcanvas1::drawPixel(int16_t x, int16_t y, uint16_t color) {
         GFXsetBit[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 },
         GFXclrBit[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xFB, 0xFD, 0xFE };
 #endif
-
+    //Serial.printf("drawPixel, before rotation : x: %03i, y: %03i, rot: %1i\n", x, y, this->rotation);
     if(buffer) {
-        if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
-
-        int16_t t;
-        switch(rotation) {
-            case 1:
-                t = x;
-                x = WIDTH  - 1 - y;
-                y = t;
-                break;
-            case 2:
-                x = WIDTH  - 1 - x;
-                y = HEIGHT - 1 - y;
-                break;
-            case 3:
-                t = x;
-                x = y;
-                y = HEIGHT - 1 - t;
-                break;
-        }
-
-        uint8_t   *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
+      int16_t t;
+      switch(rotation) {
+          case 1:
+              t = x;
+              x = WIDTH  - 1 - y;
+              y = t;
+              break;
+          case 2:
+              x = WIDTH  - 1 - x;
+              y = HEIGHT - 1 - y;
+              break;
+          case 3:
+              t = x;
+              x = y;
+              y = HEIGHT - 1 - t;
+              break;
+      }
+      if((x < 0) || (y < 0) || (x >= WIDTH) || (y >= HEIGHT)) return;
+      //Serial.printf("drawPixel, after rotation: x: %03i, y: %03i, rot: %1i, offsett: %i\n", x, y, this->rotation,(x / 8) + y * ((WIDTH + 7) / 8));
+      
+      uint8_t   *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
+      
 #ifdef __AVR__
         if(color) *ptr |= pgm_read_byte(&GFXsetBit[x & 7]);
         else      *ptr &= pgm_read_byte(&GFXclrBit[x & 7]);
@@ -117,28 +118,28 @@ bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
 #endif
   bool c;
     if(buffer) {
-        if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return false;
+/*
+      int16_t t;
+      switch(rotation) {
+          case 1:
+              t = x;
+              x = WIDTH  - 1 - y;
+              y = t;
+              break;
+          case 2:
+              x = WIDTH  - 1 - x;
+              y = HEIGHT - 1 - y;
+              break;
+          case 3:
+              t = x;
+              x = y;
+              y = HEIGHT - 1 - t;
 
-        int16_t t;
-        switch(rotation) {
-            case 1:
-                t = x;
-                x = WIDTH  - 1 - y;
-                y = t;
-                break;
-            case 2:
-                x = WIDTH  - 1 - x;
-                y = HEIGHT - 1 - y;
-                break;
-            case 3:
-                t = x;
-                x = y;
-                y = HEIGHT - 1 - t;
-
-                break;
-        }
-
-        uint8_t   *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
+              break;
+      }
+*/
+      if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return false;  
+      uint8_t   *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
 #ifdef __AVR__
         c = *ptr & pgm_read_byte(&GFXsetBit[x & 7]);
 #else
@@ -773,9 +774,9 @@ void GFXiCanvas::setTransparent(uint8_t colorIndex, bool t){
 
 void GFXiCanvas::setRotation(uint8_t rot){
   _rotation=rot;
-  //for(uint8_t i=0;i<this->_depth;i++){
-  //bitplane.at(i)->setRotation(_rotation);
-  //}
+  for(uint8_t i=0;i<this->_depth;i++){
+    bitplane.at(i)->setRotation(_rotation);
+  }
 }
 
 /**************************************************************************/
@@ -1093,7 +1094,7 @@ uint8_t GFXiCanvas::getLastError(){
 
 void GFXiCanvas::dump(usb_serial_class *s){
   if(&s){
-    s->printf("dumping canvas\n==============\nwidth : %.4i\nheight: %.4i\ndepth : %.4i\n\n",this->_width, this->_height,this->_depth);
+    s->printf("dumping canvas\n==============\nwidth : %.4i\nheight: %.4i\ndepth : %.4i\nrotation: %i\n\n",this->_width, this->_height,this->_depth,this->_rotation);
     s->printf("Palette positions: %i\n", 1<<this->_depth);
     for(uint8_t i=0;i<1<<this->_depth;i++){
       s->printf("[%02i]: (%03i, %03i, %03i)\n",i,this->palette.at(i).r,this->palette.at(i).g,this->palette.at(i).b );
