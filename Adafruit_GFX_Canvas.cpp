@@ -29,7 +29,7 @@
 
 /**************************************************************************/
 /*!
-   @brief    Instatiate a GFX 1-bit canvas context for graphics
+   @brief    Instantiate a GFX 1-bit canvas context for graphics
    @param    w   Display width, in pixels
    @param    h   Display height, in pixels
 */
@@ -57,7 +57,7 @@ GFXcanvas1::~GFXcanvas1(void) {
 */
 /**************************************************************************/
 uint8_t* GFXcanvas1::getBuffer(void) {
-    return buffer;
+  return buffer;
 }
 
 /**************************************************************************/
@@ -72,8 +72,8 @@ void GFXcanvas1::drawPixel(int16_t x, int16_t y, uint16_t color) {
 #ifdef __AVR__
     // Bitmask tables of 0x80>>X and ~(0x80>>X), because X>>Y is slow on AVR
     static const uint8_t PROGMEM
-        GFXsetBit[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 },
-        GFXclrBit[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xFB, 0xFD, 0xFE };
+      GFXsetBit[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 },
+      GFXclrBit[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xFB, 0xFD, 0xFE };
 #endif
     //Serial.printf("drawPixel, before rotation : x: %03i, y: %03i, rot: %1i\n", x, y, this->rotation);
     if(buffer) {
@@ -111,10 +111,10 @@ void GFXcanvas1::drawPixel(int16_t x, int16_t y, uint16_t color) {
 
 bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
 #ifdef __AVR__
-    // Bitmask tables of 0x80>>X and ~(0x80>>X), because X>>Y is slow on AVR
-    static const uint8_t PROGMEM
-        GFXsetBit[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 },
-        GFXclrBit[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xFB, 0xFD, 0xFE };
+  // Bitmask tables of 0x80>>X and ~(0x80>>X), because X>>Y is slow on AVR
+  static const uint8_t PROGMEM
+    GFXsetBit[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 },
+    GFXclrBit[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xFB, 0xFD, 0xFE };
 #endif
   bool c;
     if(buffer) {
@@ -476,7 +476,6 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
           .
         palette[F]=color24{r,g,b};
         ``````
-
   */
   Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\n intializing canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",_width, _height, _depth);
   if(_depth <=8 && _depth >=1){
@@ -715,13 +714,13 @@ uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
   //Serial.printf("getPixelColorIndex x:%i, y:%i [",x,y);
   if(x<0 || x>_width || y<0 || y<_height) _last_ERR=ERR_OUTOFRANGE;
   for(uint8_t i=0;i<this->_depth;i++) {
-      //Serial.printf("bitplane %i - ",i);
-      //uint8_t b=(this->bitplane.at(i)->getPixel(x,y) & 0x01)<<i;
-      c=c|(this->bitplane.at(i)->getPixel(x,y) & 0x01)<<i;
-      //Serial.printf("x: %i, y: %i, i: %i bit: %i col: %i\n",x,y,i,b,c);
-    }
-    //Serial.printf("x: %i, y: %i, c: %i\n",x,y,c);
-    return c;
+    //Serial.printf("bitplane %i - ",i);
+    //uint8_t b=(this->bitplane.at(i)->getPixel(x,y) & 0x01)<<i;
+    c=c|(this->bitplane.at(i)->getPixel(x,y) & 0x01)<<i;
+    //Serial.printf("x: %i, y: %i, i: %i bit: %i col: %i\n",x,y,i,b,c);
+  }
+  //Serial.printf("x: %i, y: %i, c: %i\n",x,y,c);
+  return c;
 }
 /**************************************************************************/
 /*!
@@ -772,6 +771,12 @@ void GFXiCanvas::setTransparent(uint8_t colorIndex, bool t){
   _useTransparency=t;
 }
 
+/**************************************************************************/
+/*!
+   @brief   set the canvas rotation
+   @param   r rotation parameter as defined in Adafruit-GFX
+*/
+/**************************************************************************/
 void GFXiCanvas::setRotation(uint8_t rot){
   _rotation=rot;
   for(uint8_t i=0;i<this->_depth;i++){
@@ -792,9 +797,10 @@ void GFXiCanvas::setRotation(uint8_t rot){
 void GFXiCanvas::setTransparent(uint16_t colorIndex, bool t){
   setTransparent((uint8_t)(colorIndex&0xff),t);
 }
+
 /**************************************************************************/
 /*!
-   @brief    set transparency status0
+   @brief    set transparency status
    @param    b   whether or not to actually use it as _transparent
    @remark   if b=false, the given palette color will be painted as set
              otherwhise, it will not be painted, leaving the pixel on
@@ -804,13 +810,17 @@ void GFXiCanvas::setTransparent(uint16_t colorIndex, bool t){
 void GFXiCanvas::setTransparent(bool t){
   _useTransparency=t;
 }
-/*
- * create a (partial) html standard palette.
- * depending on the bit depth of the canvas, this
- * will provide a selection of html colors. Six
- * bitplanes will allow for all 140 colors defined by
- * name in htmlcolors.h
+/**************************************************************************/
+/*!
+   @brief    make html Palette
+   @param    none
+   @remark   create a (partial) html standard palette.
+             depending on the bit depth of the canvas, this
+             will provide a selection of html colors. Six
+             bitplanes will allow for all 140 colors defined by
+             name in htmlcolors.h
  */
+/**************************************************************************/
 void GFXiCanvas::makeHTMLPalette(){
   setColor(html_BLACK,BLACK);
   setColor(html_WHITE,WHITE);
@@ -969,36 +979,71 @@ void GFXiCanvas::makeHTMLPalette(){
   }
 }
 
+/**************************************************************************/
+/*!
+  @brief    draw an iCanvas buffer on screen
+  @param    x,y position on screen 
+  @param    x0,y0 starting position in canvas for partial redraw
+  @param    width,height size of partial redraw rect
+  @param    *display display to draw on
+  @remark   only calls quickDraw
+*/
+/**************************************************************************/
 void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height){
   // partial redraw for the rect starting at x0, y0 with width and height
   quickDraw(x, y, display, x0, y0, width, height);
 }
 
+/**************************************************************************/
+/*!
+  @brief    draw an iCanvas buffer on screen
+  @param    x,y position on screen 
+  @param    *display display to draw on
+  @remark   calls quickDraw with the full canvas size, effectively a full redraw
+*/
+/**************************************************************************/
 void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
   // full redraw
   //Serial.printf("starting quickDraw with x: %i, y: %i, w: %i, h: %i\n",x,y,this->_width, this->_height);
   quickDraw(x, y, display, (uint16_t)0, (uint16_t)0, this->_width, this->_height);
 }
 
+/**************************************************************************/
+/*!
+  @brief    draw an iCanvas buffer on screen
+  @param    x0,y0 position on screen 
+  @param    x1,y1 starting position in canvas for partial redraw
+  @param    width,height size of partial redraw rect
+  @param    *display display to draw on
+  @remark   draws the iCanvas buffer onto the given screen, requiring a 24 bit
+            capabale Adafruit-GFX version
+            This routine tries to be smart about what to actually draw 
+            and collects runs of the same color to then draw a 
+            fastVline/fastHline. For that, it will use _textHint. If textHint 
+            is true, we'll have a preference for drawing horizontally, 
+            otherwise we'll draw vertically. The assumption is, that text
+            will have longer horizontal (blank) pixel lines.
+*/
+/**************************************************************************/
 void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_t x1, int16_t y1, int16_t w, int16_t h){
   // partial redraw, I apologize for the x0/x1 bodge
   uint8_t c;
   int16_t pos,t;
     switch(rotation) {
-        case 1:
-            t = x1;
-            x1 = w - 1 - y1;
-            y1 = t;
-            break;
-        case 2:
-            x1 = w - 1 - x1;
-            y1 = h - 1 - y1;
-            break;
-        case 3:
-            t = x1;
-            x1 = y1;
-            y1 = h - 1 - t;
-            break;
+      case 1:
+          t = x1;
+          x1 = w - 1 - y1;
+          y1 = t;
+          break;
+      case 2:
+          x1 = w - 1 - x1;
+          y1 = h - 1 - y1;
+          break;
+      case 3:
+          t = x1;
+          x1 = y1;
+          y1 = h - 1 - t;
+          break;
     }
   //Serial.printf("entering quickDraw\n");
   /*
@@ -1024,10 +1069,10 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_
   //Serial.printf("quickDraw(%i, %i, <display>, %i, %i, %i, %i)\nCanvas width: %i, height: %i\n",x0, y0, x1, y1, w, h,_width, _height);
   //(xs+width>display->_width)?w=_width-xs:w=width;
   //(ys+height>display->_height)?h=_height-ys:h=height;
-  if(w>=h && !_textHint){
+  if(w>=h || _textHint){
     //Serial.printf("using horiztical drawing with w: %i, h: %i\n", w, h);
     for (int16_t y=0;y<h;y++){
-      for (int16_t x=0;x<w;){ //ToDo - not sure if this works well for padded canvas objects (ie such that don't end on an even byte border)
+      for (int16_t x=0;x<w;){ 
         pos=0;
         //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
         c=this->getPixelColorIndex(x1+x,y1+y);
@@ -1069,6 +1114,14 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_
   }
 }
 
+/**************************************************************************/
+/*!
+  @brief    return the pointer to the buffer for the given bitplane
+  @param    plane Number of the bitplane to get the pointer to 
+            (starting with 0)
+  @returns  a pointer to a memory area. Be careful
+*/
+/**************************************************************************/
 uint8_t *GFXiCanvas::getBuffer(uint8_t plane){
   if(plane>=0 && plane<this->_depth){
     return this->bitplane.at(plane)->getBuffer();
@@ -1077,21 +1130,54 @@ uint8_t *GFXiCanvas::getBuffer(uint8_t plane){
     return 0;
   }
 }
-
+/**************************************************************************/
+/*!
+  @brief  clear the canvas
+*/
+/**************************************************************************/
 void GFXiCanvas::clearDisplay(){
   for(uint8_t i=0;i<this->_depth;i++){
     this->bitplane.at(i)->clearDisplay();
   }
 }
-
+/**************************************************************************/
+/*!
+  @brief  set the _textHint flag
+  @param  h boolean for _textHint, true means treat this as text.
+  @remark please see the description for quickDraw
+*/
+/**************************************************************************/
 void GFXiCanvas::setTextHint(bool h){
   _textHint=h;
 }
 
+/**************************************************************************/
+/*!
+  @brief    return last error
+  @returns  last error set internally
+  @remark   This library tries to provide error codes for internal states
+            Mainly, those are currently out of error and invalid index 
+            conditions, but might be more in the future. Member functions
+            in this class should clear _last_ERR upon entrance and then
+            set it accordingly before exiting.
+            The calling probram can then call getLastError() to get that
+            value.
+*/
+/**************************************************************************/
 uint8_t GFXiCanvas::getLastError(){
   return this->_last_ERR;
 }
 
+/**************************************************************************/
+/*!
+  @brief    dump the compounded canvas bitmap to serial
+  @remark   This function creates a hex dump of the effective values for 
+            the combined bitplanes and prints it to the usb_serial_class
+            device. This device is the weakest point of this function,
+            as it is not defined for every Arduino core (the initial 
+            code was written for and tested on a Teensy)
+*/
+/**************************************************************************/
 void GFXiCanvas::dump(usb_serial_class *s){
   if(&s){
     s->printf("dumping canvas\n==============\nwidth : %.4i\nheight: %.4i\ndepth : %.4i\nrotation: %i\n\n",this->_width, this->_height,this->_depth,this->_rotation);
