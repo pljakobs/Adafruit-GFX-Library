@@ -1052,7 +1052,7 @@ void GFXiCanvas::rQuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display,
         if(!(_useTransparency && c==_transparent)){
           while(x+pos<=w && this->getPixelColorIndex(x0+x+pos++, y0+y)==c);
           pos--; //pos will always overshoot by 1
-          drawSegment(xs, ys, display, x, y, getColor(c),pos,DIR_HORIZONTAL);
+          drawSegment(x_pos, y_pos, display, x, y, getColor(c),pos,DIR_HORIZONTAL);
           x+=pos;
         }else{
           x++;
@@ -1067,7 +1067,7 @@ void GFXiCanvas::rQuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display,
         if(!(_useTransparency && c==_transparent)){
           while(y+pos<=h && this->getPixelColorIndex(x0+x, y0+y+pos++)==c);
           pos--;//pos will always overshoot by 1
-          drawSegment(xs,ys, display, x, y, getColor(c),pos,DIR_VERTICAL);
+          drawSegment(x_pos,y_pos, display, x, y, getColor(c),pos,DIR_VERTICAL);
           y+=pos;
         }else{
           y++;
@@ -1083,20 +1083,20 @@ void GFXiCanvas::drawSegment(int16_t x0, int16_t y0, Adafruit_GFX *display, int1
   switch(this->_rotation) {
     case 1:
       t = x;
-      x = WIDTH  - 1 - y;
+      x = this->_width  - 1 - y;
       y = t;
       direction=!direction; //horizontal becomes vertical and vice versa
       if(direction==DIR_HORIZONTAL) x-=length; //if a positive 180° vector is rotated 90° it becomes a negative 270° vector, thus we turn it around and move the starting x coordinate
       break;
     case 2:
-      x = WIDTH  - 1 - x;
-      y = HEIGHT - 1 - y;
+      x = this->_width  - 1 - x;
+      y = this->_height - 1 - y;
       direction==DIR_HORIZONTAL?x-=length:y-=length; //flip the direction 180°
       break;
     case 3:
       t = x;
       x = y;
-      y = HEIGHT - 1 - t;
+      y = this->_height - 1 - t;
       direction=!direction; //horizontal becomes vertical and vice versa
       if(direction==DIR_VERTICAL) y-=length; //if a positive 90° vector is rotated 270° it becomes a negative 0° vector, thus we turn it around and move the starting y coordinate
       break;
