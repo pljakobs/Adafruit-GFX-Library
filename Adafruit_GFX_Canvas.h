@@ -15,6 +15,9 @@
 #define ERR_NOMEM       1
 #define ERR_OUTOFRANGE  2
 
+#define DIR_HORIZONTAL  0
+#define DIR_VERTICAL    1
+
 /// A GFX 1-bit canvas context for graphics
 class GFXcanvas1 : public Adafruit_GFX {
  public:
@@ -80,7 +83,8 @@ public:
     setColor(uint8_t index, color24 color),
     draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height),
     draw(int16_t x, int16_t y, Adafruit_GFX *display),
-    quickDraw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height),
+    quickDraw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height),     
+    rQuickDraw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height),
     clearDisplay(void),
     setTransparent(uint8_t color,bool t),
     setTransparent(uint16_t color,bool t),
@@ -102,6 +106,7 @@ public:
   uint8_t *
     getBuffer(uint8_t bitmap);
 private:
+  void drawSegment(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_t x, int16_t y, color24 c, int16_t l,bool dir);
   uint8_t
     _depth,
     _last_ERR,

@@ -528,6 +528,7 @@ void Adafruit_GFX::drawCircle(int16_t x0, int16_t y0, int16_t r,
 //#ifdef GFX_ENABLE_24Bit
 void Adafruit_GFX::drawCircle(int16_t x0, int16_t y0, int16_t r,
         color24 color) {
+            /* FIXME : drawCircle with 24 Bit color crashes  */
     int16_t f = 1 - r;
     int16_t ddF_x = 1;
     int16_t ddF_y = -2 * r;

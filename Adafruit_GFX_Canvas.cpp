@@ -8,8 +8,8 @@
   #include <pgmspace.h>
 #endif
 //#define CALLTRACE 1
-// -------------------------------------------------------------------------
 
+// -------------------------------------------------------------------------
 // GFXcanvas1, GFXcanvas8 and GFXcanvas16 (currently a WIP, don't get too
 // comfy with the implementation) provide 1-, 8- and 16-bit offscreen
 // canvases, the address of which can be passed to drawBitmap() or
@@ -26,8 +26,8 @@
 // per pixel (no scanline pad), and GFXcanvas16 uses 2 bytes per pixel (no
 // scanline pad).
 // NOT EXTENSIVELY TESTED YET.  MAY CONTAIN WORST BUGS KNOWN TO HUMANKIND.
-
 /**************************************************************************/
+
 /*!
    @brief    Instantiate a GFX 1-bit canvas context for graphics
    @param    w   Display width, in pixels
@@ -75,6 +75,7 @@ void GFXcanvas1::drawPixel(int16_t x, int16_t y, uint16_t color) {
       GFXsetBit[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 },
       GFXclrBit[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xFB, 0xFD, 0xFE };
 #endif
+    //Serial.printf("drawPixel, canvas dimension: w: %03i, h: %03i\n",WIDTH,HEIGHT);
     //Serial.printf("drawPixel, before rotation : x: %03i, y: %03i, rot: %1i\n", x, y, this->rotation);
     if(buffer) {
       int16_t t;
@@ -95,7 +96,7 @@ void GFXcanvas1::drawPixel(int16_t x, int16_t y, uint16_t color) {
               break;
       }
       if((x < 0) || (y < 0) || (x >= WIDTH) || (y >= HEIGHT)) return;
-      //Serial.printf("drawPixel, after rotation: x: %03i, y: %03i, rot: %1i, offsett: %i\n", x, y, this->rotation,(x / 8) + y * ((WIDTH + 7) / 8));
+      //Serial.printf("drawPixel, after rotation  : x: %03i, y: %03i, rot: %1i, offsett: %i\n\n", x, y, this->rotation,(x / 8) + y * ((WIDTH + 7) / 8));
       
       uint8_t   *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
       
@@ -188,33 +189,33 @@ uint8_t GFXcanvas1::getByte(int16_t x, int16_t y) {
     }
   }
 
-  /**************************************************************************/
-  /*!
-     @brief    Write a perfectly horizontal line, overwrite in subclasses if startWrite is defined!
-      @param    x   Left-most x coordinate
-      @param    y   Left-most y coordinate
-      @param    w   Width in pixels
-     @param    color 16-bit 5-6-5 Color to fill with
-  */
-  /**************************************************************************/
-  void GFXcanvas1::drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color){
-    // todo: implement fast h-line drawing by writing whole bytes if possible
-    drawLine(x,y,x+w,y, color);
-  }
+/**************************************************************************/
+/*!
+    @brief    Write a perfectly horizontal line, overwrite in subclasses if startWrite is defined!
+    @param    x   Left-most x coordinate
+    @param    y   Left-most y coordinate
+    @param    w   Width in pixels
+    @param    color 16-bit 5-6-5 Color to fill with
+*/
+/**************************************************************************/
+void GFXcanvas1::drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color){
+  // todo: implement fast h-line drawing by writing whole bytes if possible
+  drawLine(x,y,x+w,y, color);
+}
 
-  /**************************************************************************/
-  /*!
-     @brief    Write a perfectly vertical line, overwrite in subclasses if startWrite is defined!
-      @param    x   Left-most x coordinate
-      @param    y   Left-most y coordinate
-      @param    h   height in pixels
-     @param    color 16-bit 5-6-5 Color to fill with
-  */
-  /**************************************************************************/
-  void GFXcanvas1::drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color){
-    // todo: implement fast V-line drawing by writing whole bytes if possible
-    drawLine(x,y,x,y+h,color);
-  }
+/**************************************************************************/
+/*!
+    @brief    Write a perfectly vertical line, overwrite in subclasses if startWrite is defined!
+    @param    x   Left-most x coordinate
+    @param    y   Left-most y coordinate
+    @param    h   height in pixels
+    @param    color 16-bit 5-6-5 Color to fill with
+*/
+/**************************************************************************/
+void GFXcanvas1::drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color){
+  // todo: implement fast V-line drawing by writing whole bytes if possible
+  drawLine(x,y,x,y+h,color);
+}
 
 /**************************************************************************/
 /*!
@@ -299,7 +300,7 @@ void GFXcanvas8::drawPixel(int16_t x, int16_t y, uint16_t color) {
 
 /**************************************************************************/
 /*!
-   @brief    Fill the framebuffer completely with one color
+    @brief    Fill the framebuffer completely with one color
     @param    color 16-bit 5-6-5 Color to fill with
 */
 /**************************************************************************/
@@ -779,9 +780,11 @@ void GFXiCanvas::setTransparent(uint8_t colorIndex, bool t){
 /**************************************************************************/
 void GFXiCanvas::setRotation(uint8_t rot){
   _rotation=rot;
+  /*
   for(uint8_t i=0;i<this->_depth;i++){
     bitplane.at(i)->setRotation(_rotation);
   }
+  */
 }
 
 /**************************************************************************/
@@ -991,7 +994,7 @@ void GFXiCanvas::makeHTMLPalette(){
 /**************************************************************************/
 void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height){
   // partial redraw for the rect starting at x0, y0 with width and height
-  quickDraw(x, y, display, x0, y0, width, height);
+  rQuickDraw(x, y, display, x0, y0, width, height);
 }
 
 /**************************************************************************/
@@ -1005,9 +1008,105 @@ void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, i
 void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
   // full redraw
   //Serial.printf("starting quickDraw with x: %i, y: %i, w: %i, h: %i\n",x,y,this->_width, this->_height);
-  quickDraw(x, y, display, (uint16_t)0, (uint16_t)0, this->_width, this->_height);
+  rQuickDraw(x, y, display, (uint16_t)0, (uint16_t)0, this->_width, this->_height);
 }
+/**************************************************************************/
+/*!
+  @brief    draw an iCanvas buffer on screen
+  @param    x0,y0 position on screen 
+  @param    x1,y1 starting position in canvas for partial redraw
+  @param    width,height size of partial redraw rect
+  @param    *display display to draw on
+  @remark   draws the iCanvas buffer onto the given screen, requiring a 24 bit
+            capabale Adafruit-GFX version
+            This routine tries to be smart about what to actually draw 
+            and collects runs of the same color to then draw a 
+            fastVline/fastHline. For that, it will use _textHint. If textHint 
+            is true, we'll have a preference for drawing horizontally, 
+            otherwise we'll draw vertically. The assumption is, that text
+            will have longer horizontal (blank) pixel lines.
+*/
+/**************************************************************************/
 
+/**************************************************************************/
+/* Drawing on screen:                                                     */
+/* x_pos, y_pos should always refer to the top left corner                */
+/* canvas shall be rotated position*90° (0, 90, 180, 270) while drawing   */
+/* the quickDraw functions (longest runs) have to be rotated as well      */
+/* translation and rotation therefore have to be decoupled                */
+/**************************************************************************/
+
+void GFXiCanvas::rQuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t w, int16_t h){
+  uint8_t c;
+  int16_t pos,t; 
+
+  uint16_t xs=x_pos+x0;
+  uint16_t ys=y_pos+y0;
+  Serial.printf("rQuickDraw: rotation: %i\n",this->_rotation);
+  
+  if(w>=h || _textHint){
+    for (int16_t y=0;y<h;y++){
+      for (int16_t x=0;x<w;){ 
+        pos=0;
+        c=this->getPixelColorIndex(x0+x,y0+y);
+        if(!(_useTransparency && c==_transparent)){
+          while(x+pos<=w && this->getPixelColorIndex(x0+x+pos++, y0+y)==c);
+          pos--; //pos will always overshoot by 1
+          drawSegment(xs, ys, display, x, y, getColor(c),pos,DIR_HORIZONTAL);
+          x+=pos;
+        }else{
+          x++;
+        }
+      }
+    }
+  }else{
+    for (int16_t x=0;x<w;x++){
+      for (int16_t y=0;y<h;){
+        pos=0;
+        c=this->getPixelColorIndex(x0+x,y0+y);
+        if(!(_useTransparency && c==_transparent)){
+          while(y+pos<=h && this->getPixelColorIndex(x0+x, y0+y+pos++)==c);
+          pos--;//pos will always overshoot by 1
+          drawSegment(xs,ys, display, x, y, getColor(c),pos,DIR_VERTICAL);
+          y+=pos;
+        }else{
+          y++;
+        }
+      }
+    }
+  }
+  Serial.printf("display->drawCircle(%i,%i,2,WHITE);\n",x_pos,y_pos);
+  display->drawCircle(x_pos,y_pos,2,(uint16_t)0xffff);
+}
+void GFXiCanvas::drawSegment(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_t x, int16_t y, color24 c, int16_t length, bool direction){
+  uint16_t t;
+  switch(this->_rotation) {
+    case 1:
+      t = x;
+      x = WIDTH  - 1 - y;
+      y = t;
+      direction=!direction; //horizontal becomes vertical and vice versa
+      if(direction==DIR_HORIZONTAL) x-=length; //if a positive 180° vector is rotated 90° it becomes a negative 270° vector, thus we turn it around and move the starting x coordinate
+      break;
+    case 2:
+      x = WIDTH  - 1 - x;
+      y = HEIGHT - 1 - y;
+      direction==DIR_HORIZONTAL?x-=length:y-=length; //flip the direction 180°
+      break;
+    case 3:
+      t = x;
+      x = y;
+      y = HEIGHT - 1 - t;
+      direction=!direction; //horizontal becomes vertical and vice versa
+      if(direction==DIR_VERTICAL) y-=length; //if a positive 90° vector is rotated 270° it becomes a negative 0° vector, thus we turn it around and move the starting y coordinate
+      break;
+  }
+  if(length==1){
+    display->drawPixel(x0+x,y0+y,c);
+  }else{
+    direction==DIR_VERTICAL?display->drawFastVLine(x0+x,y0+y,length,c):display->drawFastHLine(x0+x,y0+y,length,c);
+  }
+}
 /**************************************************************************/
 /*!
   @brief    draw an iCanvas buffer on screen
@@ -1029,23 +1128,8 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_
   // partial redraw, I apologize for the x0/x1 bodge
   uint8_t c;
   int16_t pos,t;
-    switch(rotation) {
-      case 1:
-          t = x1;
-          x1 = w - 1 - y1;
-          y1 = t;
-          break;
-      case 2:
-          x1 = w - 1 - x1;
-          y1 = h - 1 - y1;
-          break;
-      case 3:
-          t = x1;
-          x1 = y1;
-          y1 = h - 1 - t;
-          break;
-    }
-  //Serial.printf("entering quickDraw\n");
+
+ //Serial.printf("entering quickDraw\n");
   /*
    * if useTransparency is set, color index transparent is ignored (as set
    * by setTransparent()). If it's not set, the drawing area is filled with
@@ -1070,7 +1154,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_
   //(xs+width>display->_width)?w=_width-xs:w=width;
   //(ys+height>display->_height)?h=_height-ys:h=height;
   if(w>=h || _textHint){
-    //Serial.printf("using horiztical drawing with w: %i, h: %i\n", w, h);
+    //Serial.printf("using horizontal drawing with w: %i, h: %i\n", w, h);
     for (int16_t y=0;y<h;y++){
       for (int16_t x=0;x<w;){ 
         pos=0;
