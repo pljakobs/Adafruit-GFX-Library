@@ -438,7 +438,6 @@ void GFXcanvas16::fillScreen(uint16_t color) {
    @param    d   number of bitplanes
 */
 /**************************************************************************/
-
 GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
   _width=w;
   _height=h;
@@ -594,12 +593,12 @@ GFXiCanvas::GFXiCanvas(int16_t w, int16_t h, uint8_t d):Adafruit_GFX(w, h){
     _last_ERR=ERR_OUTOFRANGE;
   }
 }
+
 /**************************************************************************/
 /*!
    @brief    free up memory used by iCanvas object
  */
 /**************************************************************************/
-
 GFXiCanvas::~GFXiCanvas(){
   //Serial.printf("\n>>>>>>>>>>>>>>>>>>>>>\n\ndeleting canvas\nwidth:  %i\nheight: %i\ndepth:  %i\n\n",_width, _height, _depth);
   for(uint8_t i=0;i<this->_depth;i++){
@@ -609,16 +608,17 @@ GFXiCanvas::~GFXiCanvas(){
   palette.clear();
   //Serial.printf("\n exit destructor\n\n>>>>>>>>>>>>>>>>>>>>>\n");
 }
+
 /**************************************************************************/
 /*!
    @brief    return the depth of an iCanvas context
    @returns  depth
 */
 /**************************************************************************/
-
 uint8_t GFXiCanvas::getDepth(){
   return this->_depth;
 }
+
 /**************************************************************************/
 /*!
    @brief    draws a pixel on an iCanvas
@@ -644,6 +644,7 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
     _last_ERR=ERR_OUTOFRANGE;
   }
 }
+
 /**************************************************************************/
 /*!
    @brief    draws a pixel on an iCanvas
@@ -659,7 +660,6 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint8_t colorIndex){
  * this is further reduced.
  */
  /***************************************************************************/
-
 void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
   #ifdef CALLTRACE
   Serial.printf("called drawPixel in canvas with 16Bit color %i\n",colorIndex);
@@ -667,6 +667,7 @@ void GFXiCanvas::drawPixel(int16_t x, int16_t y, uint16_t colorIndex){
   uint8_t c=(uint8_t)(colorIndex&0xff);
   drawPixel(x,y,c);
 }
+
 /**************************************************************************/
 /*!
    @brief    return the rgb tupel assigned to the given palette position
@@ -686,6 +687,7 @@ color24 GFXiCanvas::getColor(uint8_t i){
     _last_ERR=ERR_OUTOFRANGE;
   }
 }
+
 /**************************************************************************/
 /*!
    @brief    set color for palette position
@@ -701,6 +703,7 @@ void GFXiCanvas::setColor(uint8_t i, color24 c){
     _last_ERR=ERR_OUTOFRANGE;
   }
 }
+
 /**************************************************************************/
 /*!
    @brief    get color index for a pixel on canvas
@@ -723,6 +726,7 @@ uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
   //Serial.printf("x: %i, y: %i, c: %i\n",x,y,c);
   return c;
 }
+
 /**************************************************************************/
 /*!
    @brief    get color24 tupel for a pixel on canvas by resolving
@@ -735,6 +739,7 @@ uint8_t GFXiCanvas::getPixelColorIndex(int16_t x, int16_t y){
 color24 GFXiCanvas::getPixel24(int16_t x, int16_t y) {
   return getColor(getPixelColorIndex(x,y));
 }
+
 /**************************************************************************/
 /*!
    @brief    get color565 value for a pixel on canvas by resolving
@@ -752,6 +757,7 @@ uint16_t GFXiCanvas::getPixel565(int16_t x, int16_t y) {
   c=(color.r & 0xF8) << 8 | (color.g & 0xFC) << 3 | (color.b & 0xF8) >> 3;
   return c;
 }
+
 /**************************************************************************/
 /*!
    @brief    set the palette value that should be used as transparent
@@ -813,6 +819,7 @@ void GFXiCanvas::setTransparent(uint16_t colorIndex, bool t){
 void GFXiCanvas::setTransparent(bool t){
   _useTransparency=t;
 }
+
 /**************************************************************************/
 /*!
    @brief    make html Palette
@@ -1010,6 +1017,7 @@ void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
   //Serial.printf("starting quickDraw with x: %i, y: %i, w: %i, h: %i\n",x,y,this->_width, this->_height);
   rQuickDraw(x, y, display, (uint16_t)0, (uint16_t)0, this->_width, this->_height);
 }
+
 /**************************************************************************/
 /*!
   @brief    draw an iCanvas buffer on screen
@@ -1035,7 +1043,6 @@ void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
 /* the quickDraw functions (longest runs) have to be rotated as well      */
 /* translation and rotation therefore have to be decoupled                */
 /**************************************************************************/
-
 void GFXiCanvas::rQuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t w, int16_t h){
   uint8_t c;
   int16_t pos,t; 
@@ -1078,12 +1085,14 @@ void GFXiCanvas::rQuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display,
   Serial.printf("display->drawCircle(%i,%i,2,WHITE);\n",x_pos,y_pos);
   display->drawCircle(x_pos,y_pos,2,(uint16_t)0xffff);
 }
+
 void GFXiCanvas::drawSegment(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_t x, int16_t y, color24 c, int16_t length, bool direction){
   uint16_t t;
+  Serial.printf("drawComponent: x0: %03i, y0: %03i, x: %03i, y:%03i, length: %03i, w: %03i, h: %03i, rot: %i\n",x0,y0,x,y,length,this->_width,this->_height,this->_rotation);
   switch(this->_rotation) {
     case 1:
       t = x;
-      x = this->_width  - 1 - y;
+      x = this->_height  - 1 - y;
       y = t;
       direction=!direction; //horizontal becomes vertical and vice versa
       if(direction==DIR_HORIZONTAL) x-=length; //if a positive 180° vector is rotated 90° it becomes a negative 270° vector, thus we turn it around and move the starting x coordinate
@@ -1096,17 +1105,20 @@ void GFXiCanvas::drawSegment(int16_t x0, int16_t y0, Adafruit_GFX *display, int1
     case 3:
       t = x;
       x = y;
-      y = this->_height - 1 - t;
+      y = this->_width - 1 - t;
       direction=!direction; //horizontal becomes vertical and vice versa
       if(direction==DIR_VERTICAL) y-=length; //if a positive 90° vector is rotated 270° it becomes a negative 0° vector, thus we turn it around and move the starting y coordinate
       break;
   }
+  Serial.printf(" postrotation: x0: %03i, y0: %03i, x: %03i, y:%03i, length: %03i, w: %03i, h: %03i, rot: %i\n",x0,y0,x,y,length,this->_width,this->_height,this->_rotation);
   if(length==1){
     display->drawPixel(x0+x,y0+y,c);
   }else{
     direction==DIR_VERTICAL?display->drawFastVLine(x0+x,y0+y,length,c):display->drawFastHLine(x0+x,y0+y,length,c);
   }
 }
+
+
 /**************************************************************************/
 /*!
   @brief    draw an iCanvas buffer on screen
@@ -1187,7 +1199,7 @@ void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_
           }
           pos--;//pos will always overshoot by 1
           (pos>1)?display->drawFastVLine(xs+x,ys+y,pos,getColor(c)):display->drawPixel(xs+x,ys+y,getColor(c));
-          //erial.printf("(v) x0: %i x: %i, y0: %i y: %i, c: %i, l: %i\n",x0,x,y0,y,c,pos);
+          //Serial.printf("(v) x0: %i x: %i, y0: %i y: %i, c: %i, l: %i\n",x0,x,y0,y,c,pos);
           y+=pos;
           //delay(100);
         }else{
@@ -1214,6 +1226,7 @@ uint8_t *GFXiCanvas::getBuffer(uint8_t plane){
     return 0;
   }
 }
+
 /**************************************************************************/
 /*!
   @brief  clear the canvas
@@ -1224,6 +1237,7 @@ void GFXiCanvas::clearDisplay(){
     this->bitplane.at(i)->clearDisplay();
   }
 }
+
 /**************************************************************************/
 /*!
   @brief  set the _textHint flag
