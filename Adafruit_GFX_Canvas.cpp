@@ -1001,7 +1001,7 @@ void GFXiCanvas::makeHTMLPalette(){
 /**************************************************************************/
 void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height){
   // partial redraw for the rect starting at x0, y0 with width and height
-  rQuickDraw(x, y, display, x0, y0, width, height);
+  QuickDraw(x, y, display, x0, y0, width, height);
 }
 
 /**************************************************************************/
@@ -1015,7 +1015,7 @@ void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, i
 void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
   // full redraw
   //Serial.printf("starting quickDraw with x: %i, y: %i, w: %i, h: %i\n",x,y,this->_width, this->_height);
-  rQuickDraw(x, y, display, (uint16_t)0, (uint16_t)0, this->_width, this->_height);
+  QuickDraw(x, y, display, (uint16_t)0, (uint16_t)0, this->_width, this->_height);
 }
 
 /**************************************************************************/
@@ -1043,13 +1043,13 @@ void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
 /* the quickDraw functions (longest runs) have to be rotated as well      */
 /* translation and rotation therefore have to be decoupled                */
 /**************************************************************************/
-void GFXiCanvas::rQuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t w, int16_t h){
+void GFXiCanvas::QuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t w, int16_t h){
   uint8_t c;
   int16_t pos,t; 
 
   uint16_t xs=x_pos+x0;
   uint16_t ys=y_pos+y0;
-  Serial.printf("rQuickDraw: rotation: %i\n",this->_rotation);
+  //Serial.printf("rQuickDraw: rotation: %i\n",this->_rotation);
   
   if(w>=h || _textHint){
     for (int16_t y=0;y<h;y++){
@@ -1059,7 +1059,7 @@ void GFXiCanvas::rQuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display,
         if(!(_useTransparency && c==_transparent)){
           while(x+pos<=w && this->getPixelColorIndex(x0+x+pos++, y0+y)==c);
           pos--; //pos will always overshoot by 1
-          drawSegment(x_pos, y_pos, display, x, y, getColor(c),pos,DIR_HORIZONTAL);
+          drawSegment(x_pos, y_pos, display, x+x0, y+y0, getColor(c),pos,DIR_HORIZONTAL);
           x+=pos;
         }else{
           x++;
@@ -1074,7 +1074,7 @@ void GFXiCanvas::rQuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display,
         if(!(_useTransparency && c==_transparent)){
           while(y+pos<=h && this->getPixelColorIndex(x0+x, y0+y+pos++)==c);
           pos--;//pos will always overshoot by 1
-          drawSegment(x_pos,y_pos, display, x, y, getColor(c),pos,DIR_VERTICAL);
+          drawSegment(x_pos,y_pos, display, x+x0, y+y0, getColor(c),pos,DIR_VERTICAL);
           y+=pos;
         }else{
           y++;
@@ -1082,13 +1082,30 @@ void GFXiCanvas::rQuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display,
       }
     }
   }
-  Serial.printf("display->drawCircle(%i,%i,2,WHITE);\n",x_pos,y_pos);
-  display->drawCircle(x_pos,y_pos,2,(uint16_t)0xffff);
+  //Serial.printf("display->drawCircle(%i,%i,2,WHITE);\n",x_pos,y_pos);
+  //display->drawCircle(x_pos,y_pos,3,(uint16_t)0xffff);
 }
 
+/**************************************************************************/
+/*!
+  @brief    drawSegment is used to draw a partial from a canvas to a 
+            Adafruit-GFX display (which might in turn be another canvas)
+            It's focussing on a single rect which may be a sub portion of 
+            the canvas
+  @param    x0, y0: on screen position
+            *display pointer to the display object
+            x, y: start of the the segment within the rect to draw
+            c 24 bit color (color24)
+            length length of the segment
+            direction either DIR_HORIZONTAL or DIR_VERTICAL - drawing direction
+   @remark  This will obey the rotation state of the current canvas and
+            rotate the segment accordingly. Uses _rotation, _width and _height
+            from the current object
+*/
+/**************************************************************************/
 void GFXiCanvas::drawSegment(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_t x, int16_t y, color24 c, int16_t length, bool direction){
   uint16_t t;
-  Serial.printf("drawComponent: x0: %03i, y0: %03i, x: %03i, y:%03i, length: %03i, w: %03i, h: %03i, rot: %i\n",x0,y0,x,y,length,this->_width,this->_height,this->_rotation);
+  //Serial.printf("drawComponent: x0: %03i, y0: %03i, x: %03i, y:%03i, length: %03i, w: %03i, h: %03i, rot: %i\n",x0,y0,x,y,length,this->_width,this->_height,this->_rotation);
   switch(this->_rotation) {
     case 1:
       t = x;
@@ -1110,103 +1127,10 @@ void GFXiCanvas::drawSegment(int16_t x0, int16_t y0, Adafruit_GFX *display, int1
       if(direction==DIR_VERTICAL) y-=length; //if a positive 90° vector is rotated 270° it becomes a negative 0° vector, thus we turn it around and move the starting y coordinate
       break;
   }
-  Serial.printf(" postrotation: x0: %03i, y0: %03i, x: %03i, y:%03i, length: %03i, w: %03i, h: %03i, rot: %i\n",x0,y0,x,y,length,this->_width,this->_height,this->_rotation);
   if(length==1){
     display->drawPixel(x0+x,y0+y,c);
   }else{
     direction==DIR_VERTICAL?display->drawFastVLine(x0+x,y0+y,length,c):display->drawFastHLine(x0+x,y0+y,length,c);
-  }
-}
-
-
-/**************************************************************************/
-/*!
-  @brief    draw an iCanvas buffer on screen
-  @param    x0,y0 position on screen 
-  @param    x1,y1 starting position in canvas for partial redraw
-  @param    width,height size of partial redraw rect
-  @param    *display display to draw on
-  @remark   draws the iCanvas buffer onto the given screen, requiring a 24 bit
-            capabale Adafruit-GFX version
-            This routine tries to be smart about what to actually draw 
-            and collects runs of the same color to then draw a 
-            fastVline/fastHline. For that, it will use _textHint. If textHint 
-            is true, we'll have a preference for drawing horizontally, 
-            otherwise we'll draw vertically. The assumption is, that text
-            will have longer horizontal (blank) pixel lines.
-*/
-/**************************************************************************/
-void GFXiCanvas::quickDraw(int16_t x0, int16_t y0, Adafruit_GFX *display, int16_t x1, int16_t y1, int16_t w, int16_t h){
-  // partial redraw, I apologize for the x0/x1 bodge
-  uint8_t c;
-  int16_t pos,t;
-
- //Serial.printf("entering quickDraw\n");
-  /*
-   * if useTransparency is set, color index transparent is ignored (as set
-   * by setTransparent()). If it's not set, the drawing area is filled with
-   * that color index first, hopefully speedign up the on-screen Drawing
-   */
-  /*
-  if(!_useTransparency){
-    display->fillRect(x0,y0,this->_width, this->_height, _transparent);
-    //Serial.printf("cleared screen area \n");
-  }
-  */
-  /*
-   * use aspect ration as hint for longest run
-   */
-  if(x1+w>this->_width) w=this->_width-x1;
-  if(y1+h>this->_height) h=this->_height-y1;
-
-  uint16_t xs=x0+x1;
-  uint16_t ys=y0+y1;
-  //this->dump(&Serial);
-  //Serial.printf("quickDraw(%i, %i, <display>, %i, %i, %i, %i)\nCanvas width: %i, height: %i\n",x0, y0, x1, y1, w, h,_width, _height);
-  //(xs+width>display->_width)?w=_width-xs:w=width;
-  //(ys+height>display->_height)?h=_height-ys:h=height;
-  if(w>=h || _textHint){
-    //Serial.printf("using horizontal drawing with w: %i, h: %i\n", w, h);
-    for (int16_t y=0;y<h;y++){
-      for (int16_t x=0;x<w;){ 
-        pos=0;
-        //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
-        c=this->getPixelColorIndex(x1+x,y1+y);
-        //Serial.printf("done\n");
-        if(!(_useTransparency && c==_transparent)){
-          while(x+pos<=w && this->getPixelColorIndex(x1+x+pos++, y1+y)==c);
-          pos--; //pos will always overshoot by 1
-          (pos>1)?display->drawFastHLine(xs+x,ys+y,pos,getColor(c)):display->drawPixel(xs+x,ys+y,getColor(c));
-          //Serial.printf("(h) x: %i, y: %i, c: %i, l: %i\n",x,y,c,pos);
-          x+=pos;
-        }else{
-          x++;
-        }
-      }
-    }
-  }else{
-    //Serial.printf("using vertical drawing with w: %i, h: %i\n", w, h);
-    for (int16_t x=0;x<w;x++){
-      for (int16_t y=0;y<h;){
-        pos=0;
-        //Serial.printf("getPixelColorIndex(%i,%i)...",x,y);
-        c=this->getPixelColorIndex(x1+x,y1+y);
-        //Serial.printf("%i done\n",c);
-        //Serial.printf("-> x: %i, y: %i\n",x,y);
-        if(!(_useTransparency && c==_transparent)){
-          while(y+pos<=h && this->getPixelColorIndex(x1+x, y1+y+pos++)==c){
-            //Serial.printf("--> y: %i, pos: %i\n",y, pos);
-          }
-          pos--;//pos will always overshoot by 1
-          (pos>1)?display->drawFastVLine(xs+x,ys+y,pos,getColor(c)):display->drawPixel(xs+x,ys+y,getColor(c));
-          //Serial.printf("(v) x0: %i x: %i, y0: %i y: %i, c: %i, l: %i\n",x0,x,y0,y,c,pos);
-          y+=pos;
-          //delay(100);
-        }else{
-          y++;
-        }
-      }
-    }
   }
 }
 
