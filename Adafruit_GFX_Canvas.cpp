@@ -1001,7 +1001,7 @@ void GFXiCanvas::makeHTMLPalette(){
 /**************************************************************************/
 void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t width, int16_t height){
   // partial redraw for the rect starting at x0, y0 with width and height
-  QuickDraw(x, y, display, x0, y0, width, height);
+  quickDraw(x, y, display, x0, y0, width, height);
 }
 
 /**************************************************************************/
@@ -1015,7 +1015,7 @@ void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display, int16_t x0, i
 void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
   // full redraw
   //Serial.printf("starting quickDraw with x: %i, y: %i, w: %i, h: %i\n",x,y,this->_width, this->_height);
-  QuickDraw(x, y, display, (uint16_t)0, (uint16_t)0, this->_width, this->_height);
+  quickDraw(x, y, display, (uint16_t)0, (uint16_t)0, this->_width, this->_height);
 }
 
 /**************************************************************************/
@@ -1043,13 +1043,22 @@ void GFXiCanvas::draw(int16_t x, int16_t y, Adafruit_GFX *display){
 /* the quickDraw functions (longest runs) have to be rotated as well      */
 /* translation and rotation therefore have to be decoupled                */
 /**************************************************************************/
-void GFXiCanvas::QuickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t w, int16_t h){
+void GFXiCanvas::quickDraw(int16_t x_pos, int16_t y_pos, Adafruit_GFX *display, int16_t x0, int16_t y0, int16_t w, int16_t h){
   uint8_t c;
   int16_t pos,t; 
 
   uint16_t xs=x_pos+x0;
   uint16_t ys=y_pos+y0;
-  //Serial.printf("rQuickDraw: rotation: %i\n",this->_rotation);
+  /*
+  Serial.printf("rQuickDraw: rotation: %i\n",this->_rotation);
+  Serial.printf("x_pos : %3i, y_pos : %3i\n",x_pos,y_pos);
+  Serial.printf("x0    : %3i, y0    : %3i\n",x0,y0);
+  Serial.printf("width : %3i, height: %3i\n",w, h);
+  Serial.printf("gaugew: %3i, gaugeh: %3i\n",this->_width,this->_height);
+  */
+
+  if(y0+h>this->_height) h=this->_height-y0;
+  if(x0+w>this->_width)  w=this->_width -x0;
   
   if(w>=h || _textHint){
     for (int16_t y=0;y<h;y++){
@@ -1127,11 +1136,27 @@ void GFXiCanvas::drawSegment(int16_t x0, int16_t y0, Adafruit_GFX *display, int1
       if(direction==DIR_VERTICAL) y-=length; //if a positive 90° vector is rotated 270° it becomes a negative 0° vector, thus we turn it around and move the starting y coordinate
       break;
   }
-  if(length==1){
-    display->drawPixel(x0+x,y0+y,c);
-  }else{
-    direction==DIR_VERTICAL?display->drawFastVLine(x0+x,y0+y,length,c):display->drawFastHLine(x0+x,y0+y,length,c);
-  }
+  //Serial.printf("----------------------------------\n");
+  //Serial.printf("x0: %03i, y0: %03i\n",x0,y0);
+  //Serial.printf("x : %03i, y : %03i, length: %03i\n",x,y,length);
+  //Serial.printf("w : %03i, h : %03i\n", this->_width, this->_height);
+  //if(x>=0 && x<=this->_width && y>=0 && y<=this->_width){
+    if(length==1){
+      //Serial.printf("drawPixel(%i,%i,%i)\n",x0+x,y0+y,c);
+      display->drawPixel(x0+x,y0+y,c);
+    }else{
+      if(direction==DIR_VERTICAL){
+        //Serial.printf("drawFastVline(%i,%i,%i,%i)\n",x0+x,y0+y,length,c);
+        display->drawFastVLine(x0+x,y0+y,length,c);
+      }else{
+        //Serial.printf("drawFastHline(%i,%i,%i,%i)\n",x0+x,y0+y,length,c);
+        display->drawFastHLine(x0+x,y0+y,length,c);
+      }
+      //Serial.printf("draw done\n");
+    }
+  //}else{
+  //  Serial.printf("not drawing\n");
+  //}
 }
 
 /**************************************************************************/
