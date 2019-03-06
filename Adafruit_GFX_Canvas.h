@@ -14,6 +14,7 @@
 
 #define ERR_NOMEM       1
 #define ERR_OUTOFRANGE  2
+#define ERR_NOBUFFER    3
 
 #define DIR_HORIZONTAL  0
 #define DIR_VERTICAL    1
@@ -74,8 +75,8 @@ public:
     drawPixel(int16_t x, int16_t y, uint16_t colorIndex),
     drawPixel(int16_t x, int16_t y, uint8_t colorIndex),
 
-    //drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color),
-    //drawFastHLine(int16_t x, int16_t y, int16_t w, uint8_t color),
+    drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color),
+    drawFastHLine(int16_t x, int16_t y, int16_t w, uint8_t color),
 
     //drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color),
     //drawFastVLine(int16_t x, int16_t y, int16_t h, uint8_t color),

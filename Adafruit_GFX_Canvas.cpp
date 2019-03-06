@@ -119,7 +119,7 @@ bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
 #endif
   bool c;
     if(buffer) {
-/*
+
       int16_t t;
       switch(rotation) {
           case 1:
@@ -138,7 +138,7 @@ bool GFXcanvas1::getPixel(int16_t x, int16_t y) {
 
               break;
       }
-*/
+
       if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return false;  
       uint8_t   *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
 #ifdef __AVR__
@@ -200,7 +200,52 @@ uint8_t GFXcanvas1::getByte(int16_t x, int16_t y) {
 /**************************************************************************/
 void GFXcanvas1::drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color){
   // todo: implement fast h-line drawing by writing whole bytes if possible
-  drawLine(x,y,x+w,y, color);
+
+  // Idea: first pixel sits on nth bit, draw n bits to bit 0
+  //       draw as many 0xff bytes as there are until the rest is <8
+  //       draw remaining n bits
+
+  bool px;
+  uint8_t mask;
+  
+  uint8_t *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
+
+  if((x < 0) || (y < 0) || (x >= WIDTH) || (y >= HEIGHT)) return;
+  if(x+w>WIDTH) w=WIDTH-x;
+  
+  //Serial.printf("drawFastHLine(%03i, %03i, %03i, %06x)\n",x,y,w,color);
+  if(ptr!=0){
+    //Serial.printf("  *ptr: %08x (acoording to getBuffer: %08x\n",ptr,this->getBuffer());
+    px=!(color==0);
+    mask=0xff >> (x & 7);
+    if(w<=7){
+      mask &= 0xff<<(8-w);
+      w=0;
+    }else{
+      w-=8;
+    }
+    //Serial.printf("   mask: %2x, ptr: %2x\n",mask,*ptr);
+    px? *ptr++ |= mask:*ptr++ &= !mask;
+    //Serial.printf("set initial %i bits\n",8-(x&7) );
+    //*ptr &= mask;
+    
+    while(w>8 && !(w & 0x8000)){
+      //Serial.printf("    w: %3i\n",w);
+      px?*ptr++ |= 0xff:*ptr++ &= !0xff;
+      w-=8;
+    }
+
+    if(w>0){
+      Serial.printf("   w: %3i\n",w);
+      mask = 0xff<<(8-w);
+      px?*ptr++ |= mask:*ptr++ &= !mask;
+      w=0;
+    }
+  }else{
+      //Serial.printf("got no buffer pointer\n");
+  }
+  
+  //drawLine(x,y,x+w,y, color);
 }
 
 /**************************************************************************/
@@ -989,6 +1034,38 @@ void GFXiCanvas::makeHTMLPalette(){
   }
 }
 
+void GFXiCanvas::drawFastHLine(int16_t x, int16_t y, int16_t w, uint8_t colorIndex){
+  if(colorIndex<(1<<this->_depth)){
+    _last_ERR=0;
+    //#ifdef CALLTRACE
+    //Serial.printf("called drawFastHline in canvas with 8Bit color x: %i, y: %i, w: %i c: %i\n",x,y,w,colorIndex);
+    //#endif
+    //Serial.printf("drawing pixel at x:%i, y:%i\n",x,y);
+    for(uint8_t i=0;i<this->_depth;i++) {
+      //Serial.printf("bitplane:%i, val:%i\n",i,(colorIndex && 1<<i));
+      this->bitplane.at(i)->drawFastHLine(x,y,w,(colorIndex & (1<<i)));
+      }
+  }else{
+    _last_ERR=ERR_OUTOFRANGE;
+  }
+}
+
+void GFXiCanvas::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t colorIndex){
+  colorIndex &= 0xff;
+  if(colorIndex<(1<<this->_depth)){
+    _last_ERR=0;
+    //#ifdef CALLTRACE
+    //Serial.printf("called drawFastHline in canvas with 16Bit color x: %i, y: %i, w: %i, c: %i\n",x,y,w,colorIndex);
+    //#endif
+    //Serial.printf("drawing pixel at x:%i, y:%i\n",x,y);
+    for(uint8_t i=0;i<this->_depth;i++) {
+      //Serial.printf("bitplane:%i, val:%i\n",i,(colorIndex && 1<<i));
+      this->bitplane.at(i)->drawFastHLine(x,y,w,(colorIndex & (1<<i)));
+      }
+  }else{
+    _last_ERR=ERR_OUTOFRANGE;
+  }
+}
 /**************************************************************************/
 /*!
   @brief    draw an iCanvas buffer on screen
